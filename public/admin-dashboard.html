@@ -1,0 +1,205 @@
+<!-- admin-dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - OMNISOFT SYSTEMS</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<style>
+    /* Reset and default font */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Main body layout: sidebar + content */
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f5f7fa;
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+      width: 220px;
+      background-color: #012a4a;
+      color: white;
+      padding: 20px 0;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    /* Sidebar link and button styles */
+    .sidebar a,
+    .dropdown-btn {
+      display: block;
+      padding: 12px 30px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Hover effect on sidebar items */
+    .sidebar a:hover,
+    .dropdown-btn:hover {
+      background-color: #014f86;
+    }
+
+    /* Dropdown container hidden by default */
+    .dropdown-container {
+      display: none;
+      background-color: #014f86;
+    }
+
+    /* Nested dropdown items */
+    .dropdown-container a {
+      padding-left: 50px;
+      font-size: 14px;
+    }
+
+    /* Main content area */
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* Header styling (logo + title) */
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 30px;
+
+    }
+
+    /* Company name styling */
+    .company-name {
+      font-family:  sans-serif;
+      font-weight: 700;
+      font-size: 40px;
+      color: #012a4a;
+      letter-spacing: 1px;
+    }
+
+    /* Dashboard card layout */
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* Individual card styling */
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #012a4a;
+    }
+
+    /* Responsive styles for smaller devices */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+      }
+
+      .logo {
+        height: 30px;
+        max-width: 80px;
+      }
+
+      .company-name {
+        font-size: 18px;
+      }
+
+      .sidebar {
+        width: 100px;
+      }
+
+      .sidebar a,
+      .dropdown-btn {
+        font-size: 14px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .dropdown-container a {
+        padding-left: 20px;
+      }
+    }
+</style>
+<body>
+  <div class="sidebar">
+    <h2>HR</h2>
+    <a href="#">🏠 Dashboard</a>
+    <a href="employee-directory.html">👥 Directory</a>
+    <a href="employee-onboarding.html">📝 Employee Onboarding</a>
+    <a href="documents.html">📁 Documents</a>
+    <button class="dropdown-btn">👤 Profile ▼</button>
+    <div class="dropdown-container">
+      <a href="view-profile.html">View Profile</a>
+      <a href="login.html">Logout</a>
+    </div>
+    <button class="dropdown-btn">✈️ Leave ▼</button>
+    <div class="dropdown-container">
+      <a href="leave-management.html">Leave Management</a>
+    </div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <span class="company-name">OMNISOFT SYSTEMS</span>
+    </div>
+    <h2>Admin Dashboard — June 2025 <span style="float: right;">Welcome 👤</span></h2>
+    <div class="card-container">
+      <div class="card">
+        <h3>📊 Total Employees</h3>
+        <p>145 employees</p>
+      </div>
+      <div class="card">
+        <h3>📁 New Documents</h3>
+        <p>5 documents uploaded this week</p>
+      </div>
+      <div class="card">
+        <h3>📋 Leave Requests</h3>
+        <p>3 pending approvals</p>
+      </div>
+      <div class="card">
+        <h3>📢 Announcements</h3>
+        <p>Company-wide meeting on Friday</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.querySelectorAll(".dropdown-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const container = btn.nextElementSibling;
+        container.style.display = container.style.display === "block" ? "none" : "block";
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Timesheet - Omni HR</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f5f7fa;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #012a4a;
+      color: white;
+      padding: 20px 0;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .sidebar a,
+    .dropdown-btn {
+      display: block;
+      padding: 12px 30px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover,
+    .dropdown-btn:hover {
+      background-color: #014f86;
+    }
+
+    .dropdown-container {
+      display: none;
+      background-color: #014f86;
+    }
+
+    .dropdown-container a {
+      padding-left: 50px;
+      font-size: 14px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      height: 20px;
+      width: auto;
+      max-width: 120px;
+    }
+
+    .company-name {
+      font-size: 42px;
+      font-weight: bold;
+      color: #012a4a;
+    }
+
+    h2 {
+      color: #012a4a;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #012a4a;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+      }
+
+      .company-name {
+        font-size: 28px;
+      }
+
+      .sidebar {
+        width: 100px;
+      }
+
+      .sidebar a, .dropdown-btn {
+        font-size: 14px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .dropdown-container a {
+        padding-left: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Omni HR</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="employee-directory.html">👥 Directory</a>
+
+    <button class="dropdown-btn">🕒 Timesheet ▼</button>
+    <div class="dropdown-container">
+      <a href="timesheet.html">Log Timesheet</a>
+      <a href="view-timesheet.html">View Timesheet</a>
+    </div>
+
+    <button class="dropdown-btn">✈️ Leave ▼</button>
+    <div class="dropdown-container">
+      <a href="leave-management.html">Apply Leave</a>
+      <a href="#">Leave Status</a>
+    </div>
+
+    <button class="dropdown-btn">💳 Payroll ▼</button>
+    <div class="dropdown-container">
+      <a href="payslip.html">Payslip</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="header">
+      <img src="images/logo.png" alt="Logo" class="logo" />
+      <span class="company-name">OMNISOFT SYSTEMS</span>
+    </div>
+
+    <h2>🕒 View Timesheet</h2>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Project</th>
+            <th>Hours Worked</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="timesheetTableBody">
+          <!-- Timesheet rows will be inserted dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const dropdowns = document.querySelectorAll(".dropdown-btn");
+    dropdowns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const container = btn.nextElementSibling;
+        container.style.display = container.style.display === "block" ? "none" : "block";
+      });
+    });
+
+    // Fetch timesheet data from backend (dummy fetch for now)
+    async function loadTimesheets() {
+      try {
+        const response = await fetch("http://localhost:5000/api/timesheets");
+        const data = await response.json();
+        const tbody = document.getElementById("timesheetTableBody");
+
+        data.forEach(entry => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${entry.date}</td>
+            <td>${entry.project}</td>
+            <td>${entry.hours}</td>
+            <td>${entry.notes || ""}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching timesheets:", err);
+      }
+    }
+
+    loadTimesheets();
+  </script>
+</body>
+</html>

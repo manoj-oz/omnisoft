@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Meta tags for encoding and responsive design -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>OMNISOFT SYSTEMS</title>
+
+  <!-- Internal CSS styles -->
+  <style>
+    /* Reset and default font */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Main body layout: sidebar + content */
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f5f7fa;
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+      width: 220px;
+      background-color: #012a4a;
+      color: white;
+      padding: 20px 0;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    /* Sidebar link and button styles */
+    .sidebar a,
+    .dropdown-btn {
+      display: block;
+      padding: 12px 30px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* Hover effect on sidebar items */
+    .sidebar a:hover,
+    .dropdown-btn:hover {
+      background-color: #014f86;
+    }
+
+    /* Dropdown container hidden by default */
+    .dropdown-container {
+      display: none;
+      background-color: #014f86;
+    }
+
+    /* Nested dropdown items */
+    .dropdown-container a {
+      padding-left: 50px;
+      font-size: 14px;
+    }
+
+    /* Main content area */
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* Header styling (logo + title) */
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 30px;
+
+    }
+
+    /* Company name styling */
+    .company-name {
+      font-family:  sans-serif;
+      font-weight: 700;
+      font-size: 40px;
+      color: #012a4a;
+      letter-spacing: 1px;
+    }
+
+    /* Dashboard card layout */
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* Individual card styling */
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #012a4a;
+    }
+
+    /* Responsive styles for smaller devices */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+      }
+
+      .logo {
+        height: 30px;
+        max-width: 80px;
+      }
+
+      .company-name {
+        font-size: 18px;
+      }
+
+      .sidebar {
+        width: 100px;
+      }
+
+      .sidebar a,
+      .dropdown-btn {
+        font-size: 14px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .dropdown-container a {
+        padding-left: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar navigation -->
+  <div class="sidebar">
+    <h2>HR</h2>
+
+    <!-- Direct link to Dashboard -->
+    <a href="#">🏠 Dashboard</a>
+
+    <!-- Employee directory page -->
+    <a href="employee-directory.html">👥 Directory</a>
+    <a href="employee-onboarding.html">📝 Employee Onboarding</a>
+     <!-- Dropdown for Documents options -->
+    <a href="documents.html">📁 Documents</a>
+
+
+    <!-- Dropdown for profile actions -->
+    <button class="dropdown-btn">👤 Profile ▼</button>
+    <div class="dropdown-container">
+      <a href="view-profile.html">View Profile</a>    
+      <a href="login.html">Logout</a>
+    </div>
+
+    
+
+    <!-- Dropdown for leave options -->
+    <button class="dropdown-btn">✈️ Leave ▼</button>
+    <div class="dropdown-container">
+  
+      <a href="leave-management.html">Leave Management</a> <!-- Admin page -->
+    </div>
+
+    <!-- Dropdown for timesheet actions -->
+    <button class="dropdown-btn">🕒 Timesheet ▼</button>
+    <div class="dropdown-container">
+      <a href="timesheet.html">Log Timesheet</a>
+      <a href="view-timesheet.html">View Timesheet</a>
+    </div>
+
+    <!-- Dropdown for payroll-related options -->
+    <button class="dropdown-btn">💳 Payroll ▼</button>
+    <div class="dropdown-container">
+      <a href="payslip.html">Payslip</a>
+      <a href="#">Tax Info</a>
+      <a href="#">Bank Details</a>
+    </div>
+
+    
+  </div>
+
+  <!-- Main content area -->
+  <div class="main">
+    <!-- Company header with logo -->
+    <div class="header">
+      <span class="company-name">OMNISOFT SYSTEMS</span>
+    </div>
+
+    <!-- Dashboard title and greeting -->
+    <h2>Dashboard — June 2025 <span style="float: right;">Welcome 👤</span></h2>
+
+    <!-- Dashboard information cards -->
+    <div class="card-container">
+      <div class="card">
+        <h3>🛫 Leave Balance</h3>
+        <p><strong>Annual:</strong> 12 days</p>
+        <p><strong>Sick:</strong> 5 days</p>
+      </div>
+      <div class="card">
+        <h3>🕒 Attendance</h3>
+        <p>Today: 08:45 AM - 05:30 PM</p>
+      </div>
+      <div class="card">
+        <h3>🎂 Birthdays</h3>
+        <p>No birthdays today</p>
+      </div>
+      <div class="card">
+        <h3>📢 Announcements</h3>
+        <p>Company-wide meeting on Friday</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript for dropdown toggle functionality -->
+  <script>
+    const dropdowns = document.querySelectorAll(".dropdown-btn");
+
+    // Toggle the visibility of each dropdown section
+    dropdowns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const container = btn.nextElementSibling;
+        container.style.display = container.style.display === "block" ? "none" : "block";
+      });
+    });
+  </script>
+
+  <script>
+  function logout() {
+    fetch('/logout', {
+      method: 'POST',
+      credentials: 'include' // Important: sends cookies/session data
+    })
+    .then(res => {
+      if (res.ok) {
+        window.location.href = 'index.html'; // Redirect to login
+      } else {
+        alert('Logout failed');
+      }
+    })
+    .catch(err => {
+      console.error('Logout error:', err);
+      alert('Logout error');
+    });
+  }
+</script>
+
+
+</body>
+
+</html>

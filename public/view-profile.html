@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View/Edit Profile - Omni HR</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      padding: 40px;
+    }
+
+    .profile-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #012a4a;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      color: #012a4a;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .btn-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background-color: #012a4a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #014f86;
+    }
+
+    input:disabled {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <h2>View / Edit Profile</h2>
+
+    <form id="profileForm">
+      <label>Full Name</label>
+      <input type="text" name="name" value="Manoj Chilukuri" disabled />
+
+      <label>Email</label>
+      <input type="email" name="email" value="manoj@example.com" disabled />
+
+      <label>Department</label>
+      <input type="text" name="department" value="IT" disabled />
+
+      <label>Designation</label>
+      <input type="text" name="designation" value="Data Engineer" disabled />
+
+      <label>Phone</label>
+      <input type="text" name="phone" value="9876543210" disabled />
+
+      <label>Address</label>
+      <input type="text" name="address" value="Hyderabad, India" disabled />
+
+      <div class="btn-container">
+        <button type="button" onclick="enableEditing()">Edit</button>
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function enableEditing() {
+      const inputs = document.querySelectorAll('#profileForm input');
+      inputs.forEach(input => input.disabled = false);
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Profile updated successfully! (Backend functionality can be integrated here)');
+      const inputs = document.querySelectorAll('#profileForm input');
+      inputs.forEach(input => input.disabled = true);
+    });
+  </script>
+</body>
+</html>

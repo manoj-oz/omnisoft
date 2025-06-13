@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Directory - Omni HR</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .header h1 {
+      color: #012a4a;
+    }
+
+    .search-box input,
+    .filters select {
+      padding: 8px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-left: 10px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #012a4a;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #toggleFormBtn {
+      background-color: #012a4a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    #toggleFormBtn:hover {
+      background-color: #014f86;
+    }
+
+    form input, form button {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    form button {
+      background-color: #012a4a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    form button:hover {
+      background-color: #014f86;
+    }
+
+    #addEmployeeForm {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .search-box input, .filters select {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Employee Directory</h1>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search employees...">
+    </div>
+    <div class="filters">
+      <select id="departmentFilter">
+        <option value="">All Departments</option>
+        <option value="IT">IT</option>
+        <option value="Human Resources">Human Resources</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Finance">Finance</option>
+        <option value="Product">Product</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="employeeTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Designation</th>
+          <th>Department</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be dynamically inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <button id="toggleFormBtn">➕ Add Employee</button>
+
+  <div class="table-container">
+    <form id="addEmployeeForm">
+      <input type="text" name="fullname" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="designation" placeholder="Designation" required>
+      <input type="text" name="department" placeholder="Department" required>
+      <button type="submit">Add Employee</button>
+    </form>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const departmentFilter = document.getElementById("departmentFilter");
+    const tableBody = document.querySelector("#employeeTable tbody");
+    const addForm = document.getElementById("addEmployeeForm");
+    const toggleFormBtn = document.getElementById("toggleFormBtn");
+
+    let employeesData = [];
+
+    toggleFormBtn.addEventListener("click", () => {
+      addForm.style.display = addForm.style.display === "none" ? "block" : "none";
+    });
+
+    async function loadEmployees() {
+      const response = await fetch('http://localhost:5000/api/employees');
+      const data = await response.json();
+      employeesData = data;
+      displayEmployees(data);
+    }
+
+    function displayEmployees(data) {
+      tableBody.innerHTML = "";
+      data.forEach(emp => {
+        const row = `
+          <tr>
+            <td>${emp.fullname}</td>
+            <td>${emp.designation}</td>
+            <td>${emp.department}</td>
+            <td>${emp.email}</td>
+          </tr>`;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    function applyFilters() {
+      const query = searchInput.value.toLowerCase();
+      const department = departmentFilter.value;
+
+      const filtered = employeesData.filter(emp => {
+        const matchSearch = emp.fullname.toLowerCase().includes(query) ||
+                            emp.designation.toLowerCase().includes(query) ||
+                            emp.email.toLowerCase().includes(query);
+        const matchDept = !department || emp.department === department;
+        return matchSearch && matchDept;
+      });
+
+      displayEmployees(filtered);
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    departmentFilter.addEventListener("change", applyFilters);
+
+    document.getElementById("addEmployeeForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(this).entries());
+
+      const response = await fetch('http://localhost:5000/api/employees/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        this.reset();
+        addForm.style.display = "none"; // Hide form after submit
+        await loadEmployees();
+      } else {
+        alert("Failed to add employee.");
+      }
+    });
+
+    loadEmployees();
+  </script>
+</body>
+</html>

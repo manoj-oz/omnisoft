@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leave Details</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h2>Leave Balance</h2>
+  <div id="leave-balance"></div>
+
+  <h2>Leave History</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="leave-history"></tbody>
+  </table>
+
+  <script>
+    fetch('/employee/leaves')
+      .then(res => res.json())
+      .then(data => {
+        const balanceDiv = document.getElementById('leave-balance');
+        balanceDiv.innerHTML = `
+          <p>Sick Leave: ${data.balance?.sick_leave ?? 0}</p>
+          <p>Casual Leave: ${data.balance?.casual_leave ?? 0}</p>
+        `;
+
+        const historyTbody = document.getElementById('leave-history');
+        data.history.forEach(leave => {
+          historyTbody.innerHTML += `
+            <tr>
+              <td>${leave.leave_type}</td>
+              <td>${leave.start_date}</td>
+              <td>${leave.end_date}</td>
+              <td>${leave.status}</td>
+            </tr>
+          `;
+        });
+      });
+  </script>
+</body>
+</html>

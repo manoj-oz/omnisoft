@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payslip - OMNISOFT SYSTEMS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background-color: #f5f7fa;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #012a4a;
+      color: white;
+      padding: 20px 0;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .sidebar a,
+    .dropdown-btn {
+      display: block;
+      padding: 12px 30px;
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      background: none;
+      border: none;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover,
+    .dropdown-btn:hover {
+      background-color: #014f86;
+    }
+
+    .dropdown-container {
+      display: none;
+      background-color: #014f86;
+    }
+
+    .dropdown-container a {
+      padding-left: 50px;
+      font-size: 14px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      height: 20px;
+      width: auto;
+      max-width: 120px;
+    }
+
+    .company-name {
+      font-size: 42px;
+      font-weight: bold;
+      color: #012a4a;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #012a4a;
+    }
+
+    label,
+    select {
+      font-size: 16px;
+      margin-top: 10px;
+      display: block;
+    }
+
+    select {
+      padding: 8px;
+      width: 200px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #012a4a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #014f86;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+      }
+
+      .logo {
+        height: 30px;
+        max-width: 80px;
+      }
+
+      .company-name {
+        font-size: 18px;
+      }
+
+      .sidebar {
+        width: 100px;
+      }
+
+      .sidebar a,
+      .dropdown-btn {
+        font-size: 14px;
+        padding: 10px;
+        text-align: center;
+      }
+
+      .dropdown-container a {
+        padding-left: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Omni HR</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="employee-directory.html">👥 Directory</a>
+
+    <button class="dropdown-btn">👤 Profile ▼</button>
+    <div class="dropdown-container">
+      <a href="#">View Profile</a>
+      <a href="#">Edit Profile</a>
+      <a href="#">Logout</a>
+    </div>
+
+    <button class="dropdown-btn">✈️ Leave ▼</button>
+    <div class="dropdown-container">
+      <a href="leave-management.html">Apply Leave</a>
+      <a href="#">Leave Status</a>
+      <a href="#">Leave History</a>
+    </div>
+
+    <button class="dropdown-btn">💳 Payroll ▼</button>
+    <div class="dropdown-container">
+      <a href="payslip.html">Payslip</a>
+      <a href="#">Tax Info</a>
+      <a href="#">Bank Details</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="header">
+      <img src="images/logo.png" alt="Logo" class="logo" />
+      <span class="company-name">OMNISOFT SYSTEMS</span>
+    </div>
+
+    <h2>Payslip — June 2025 <span style="float: right;">Welcome, Manoj 👤</span></h2>
+
+    <div class="card">
+      <label for="month">Select Month:</label>
+      <select id="month">
+        <option>June 2025</option>
+        <option>May 2025</option>
+        <option>April 2025</option>
+      </select>
+
+      <h3>🧾 Salary Details</h3>
+      <p><strong>Basic:</strong> ₹40,000</p>
+      <p><strong>HRA:</strong> ₹10,000</p>
+      <p><strong>Allowances:</strong> ₹5,000</p>
+      <p><strong>Deductions:</strong> ₹3,000</p>
+      <hr>
+      <p><strong>Net Pay:</strong> ₹52,000</p>
+
+      <button style="margin-top: 20px;">📥 Download Payslip (PDF)</button>
+    </div>
+  </div>
+
+  <!-- Dropdown JS -->
+  <script>
+    const dropdowns = document.querySelectorAll(".dropdown-btn");
+    dropdowns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const container = btn.nextElementSibling;
+        container.style.display = container.style.display === "block" ? "none" : "block";
+      });
+    });
+    document.querySelector("button").addEventListener("click", async () => {
+  const month = document.getElementById("month").value;
+
+  const response = await fetch("http://localhost:5000/api/download-payslip", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: "Manoj Chilukuri",
+      email: "manoj@gmail.com",
+      month: month
+    })
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Payslip_${month}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
+
+  </script>
+</body>
+
+</html>
