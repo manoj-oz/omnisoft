@@ -78,11 +78,21 @@
       border-left: 5px solid #012a4a;
       display: none;
     }
+
+    .logo {
+      width: 350px;
+      /* You can adjust the size */
+      margin-bottom: 1em;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 </head>
 
 <body>
   <div class="onboarding-container">
+    <img src="images/logo.png" alt="My Logo" class="logo" />
     <h2>New Employee Onboarding</h2>
 
     <form id="onboardingForm">
@@ -102,6 +112,10 @@
 
       <label for="dob">Date of Birth</label>
       <input type="date" id="dob" name="dob" required>
+
+      <label for="personalEmail">Personal Email</label>
+      <input type="email" id="personalEmail" name="personalEmail" required>
+
 
       <label for="designation">Designation</label>
       <input type="text" id="designation" name="designation" required>
@@ -149,8 +163,6 @@
       <label for="payslips">Payslips</label>
       <input type="file" id="payslips" name="payslips">
 
-      <label for="notes">Additional Notes</label>
-      <textarea id="notes" name="notes" rows="4"></textarea>
 
       <button type="submit">Submit</button>
     </form>

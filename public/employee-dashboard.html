@@ -1,182 +1,35 @@
-<!-- employee-dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Employee Dashboard - OMNISOFT SYSTEMS</title>
-  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="dashboard.css" />
 </head>
-<style>
-    /* Reset and default font */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-    }
+<body onload="noBack();" onpageshow="if (event.persisted) noBack();" onunload="">
 
-    /* Main body layout: sidebar + content */
-    body {
-      display: flex;
-      min-height: 100vh;
-      background-color: #f5f7fa;
-    }
-
-    /* Sidebar styles */
-    .sidebar {
-      width: 220px;
-      background-color: #012a4a;
-      color: white;
-      padding: 20px 0;
-    }
-
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    /* Sidebar link and button styles */
-    .sidebar a,
-    .dropdown-btn {
-      display: block;
-      padding: 12px 30px;
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      background: none;
-      border: none;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    /* Hover effect on sidebar items */
-    .sidebar a:hover,
-    .dropdown-btn:hover {
-      background-color: #014f86;
-    }
-
-    /* Dropdown container hidden by default */
-    .dropdown-container {
-      display: none;
-      background-color: #014f86;
-    }
-
-    /* Nested dropdown items */
-    .dropdown-container a {
-      padding-left: 50px;
-      font-size: 14px;
-    }
-
-    /* Main content area */
-    .main {
-      flex: 1;
-      padding: 20px;
-    }
-
-    /* Header styling (logo + title) */
-    .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      padding: 15px 0;
-      background-color: #ffffff;
-      border-bottom: 1px solid #ccc;
-      margin-bottom: 30px;
-
-    }
-
-    /* Company name styling */
-    .company-name {
-      font-family:  sans-serif;
-      font-weight: 700;
-      font-size: 40px;
-      color: #012a4a;
-      letter-spacing: 1px;
-    }
-
-    /* Dashboard card layout */
-    .card-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    /* Individual card styling */
-    .card {
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .card h3 {
-      margin-bottom: 10px;
-      color: #012a4a;
-    }
-
-    .logo {
-  width: 350px;         /* You can adjust the size */
-  margin-bottom: 1em;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-
-    /* Responsive styles for smaller devices */
-    @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-      }
-
-      .logo {
-        height: 30px;
-        max-width: 80px;
-      }
-
-      .company-name {
-        font-size: 18px;
-      }
-
-      .sidebar {
-        width: 100px;
-      }
-
-      .sidebar a,
-      .dropdown-btn {
-        font-size: 14px;
-        padding: 10px;
-        text-align: center;
-      }
-
-      .dropdown-container a {
-        padding-left: 20px;
-      }
-    }
-</style>
-<body>
   <div class="sidebar">
     <h2>Employee</h2>
     <a href="#">🏠 Dashboard</a>
+    
     <button class="dropdown-btn">👤 Profile ▼</button>
     <div class="dropdown-container">
       <a href="view-profile.html">View Profile</a>
       <a href="reset-password.html">Reset Password</a>
-      <a href="/logout">Logout</a>
+      <a href="#" onclick="logout()">Logout</a>
     </div>
+
     <button class="dropdown-btn">✈️ Leave ▼</button>
     <div class="dropdown-container">
-      <a href="apply-leave.html">Apply Leave</a>
-      <a href="leave-status.html">Leave Status</a>
+      <a href="leaves.html">Leaves</a>
     </div>
+
     <button class="dropdown-btn">🕒 Timesheet ▼</button>
     <div class="dropdown-container">
       <a href="timesheet.html">Log Timesheet</a>
       <a href="view-timesheet.html">View Timesheet</a>
     </div>
+
     <button class="dropdown-btn">💳 Payroll ▼</button>
     <div class="dropdown-container">
       <a href="payslip.html">Payslip</a>
@@ -184,38 +37,71 @@
       <a href="#">Bank Details</a>
     </div>
   </div>
+
   <div class="main">
     <div class="header">
-      <img src="images/logo.png" alt="My Logo" class="logo" />
+      <img src="images/logo.png" alt="Logo" class="logo"/>
     </div>
-    <h2>Employee Dashboard — June 2025 <span style="float: right;">Welcome 👤</span></h2>
+
+    <h2>Employee Dashboard — June 2025 
+      <span class="welcome-text" style="float: right;">Welcome 👤</span>
+    </h2>
+
     <div class="card-container">
       <div class="card">
-        <h3>🛫 Leave Balance</h3>
-        <p><strong>Annual:</strong> 12 days</p>
-        <p><strong>Sick:</strong> 5 days</p>
-      </div>
-      <div class="card">
-        <h3>🕒 Attendance</h3>
-        <p>Today: 08:45 AM - 05:30 PM</p>
-      </div>
-      <div class="card">
         <h3>🎂 Birthdays</h3>
-        <p>No birthdays today</p>
+        <p class="birthday-msg">Loading...</p>
       </div>
+
       <div class="card">
         <h3>📢 Announcements</h3>
         <p>Company-wide meeting on Friday</p>
       </div>
     </div>
   </div>
+
   <script>
+    // Dropdown toggle logic
     document.querySelectorAll(".dropdown-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const container = btn.nextElementSibling;
         container.style.display = container.style.display === "block" ? "none" : "block";
       });
     });
+
+    function noBack() {
+      window.history.forward();
+    }
+
+    function logout() {
+      fetch('/logout')
+        .then(() => window.location.href = '/login.html')
+        .catch(err => {
+          alert('Logout failed');
+          console.error(err);
+        });
+    }
+
+    // Load dashboard data
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('/employee/dashboard-data')
+        .then(res => res.json())
+        .then(data => {
+          document.querySelector('.welcome-text').textContent = `Welcome 👤 ${data.name}`;
+          document.querySelector('.birthday-msg').textContent = data.birthdayToday;
+        })
+        .catch(err => {
+          console.error('Dashboard fetch error:', err);
+          alert('Unable to load dashboard data');
+        });
+    });
+
+    // Session check
+    fetch('/api/check-session')
+      .then(res => {
+        if (!res.ok) window.location.href = '/login.html';
+      })
+      .catch(() => window.location.href = '/login.html');
   </script>
 </body>
 </html>

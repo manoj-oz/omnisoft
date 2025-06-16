@@ -54,14 +54,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).send('Invalid email or password');
     }
 
-    // Store user session
-    req.session.user = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      fullname: user.fullname,
-      is_first_login: user.is_first_login
-    };
+    // Set session
+    req.session.userId = user.id;
+    req.session.userRole = user.role;
 
     // First login - force password reset
     if (user.is_first_login) {
@@ -69,11 +64,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Role-based redirect
-    if (user.role === 'admin') {
-      return res.redirect('/admin-dashboard.html');
-    } else {
-      return res.redirect('/employee-dashboard.html');
-    }
+    return res.redirect(user.role === 'admin' ? '/admin-dashboard.html' : '/employee-dashboard.html');
 
   } catch (err) {
     console.error("Login error:", err);
@@ -82,13 +73,13 @@ router.post('/login', async (req, res) => {
 });
 
 // === PASSWORD RESET ===
-// === PASSWORD RESET ===
 router.post('/reset-password', async (req, res) => {
-  if (!req.session.user || !req.session.user.id) {
+  const userId = req.session.userId;
+  const { newPassword } = req.body;
+
+  if (!userId) {
     return res.status(401).send('Unauthorized');
   }
-
-  const { newPassword } = req.body;
 
   if (!newPassword) {
     return res.status(400).send('New password is required');
@@ -98,12 +89,9 @@ router.post('/reset-password', async (req, res) => {
     const hashed = await bcrypt.hash(newPassword, 10);
 
     await pool.query(
-      'UPDATE users SET password = $1, is_first_login = false WHERE id = $2',
-      [hashed, req.session.user.id]
+      'UPDATE users SET password = $1, is_first_login = false, default_password = false WHERE id = $2',
+      [hashed, userId]
     );
-
-    // Password reset success — now update session and redirect
-    req.session.user.is_first_login = false;
 
     res.redirect('/employee-dashboard.html');
 
@@ -115,15 +103,30 @@ router.post('/reset-password', async (req, res) => {
 
 // === LOGOUT ===
 router.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
+  req.session.destroy(err => {
     if (err) {
       console.error("Logout error:", err);
       return res.status(500).send("Logout failed");
     }
-    res.redirect('/login.html');
+
+    // Clear session cookie
+    res.clearCookie('connect.sid', {
+      path: '/',
+      httpOnly: true,
+      secure: false  // Change to true if using HTTPS
+    });
+
+    return res.redirect('/login.html');
   });
 });
 
-
+// === SESSION CHECK (Optional: For frontend JS to detect session timeout) ===
+router.get('/api/check-session', (req, res) => {
+  if (req.session && req.session.userId) {
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(401); // Unauthorized
+  }
+});
 
 module.exports = router;

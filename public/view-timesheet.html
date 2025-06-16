@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>View Timesheet - Omni HR</title>
   <style>
     * {
@@ -18,47 +19,6 @@
       background-color: #f5f7fa;
     }
 
-    .sidebar {
-      width: 220px;
-      background-color: #012a4a;
-      color: white;
-      padding: 20px 0;
-    }
-
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .sidebar a,
-    .dropdown-btn {
-      display: block;
-      padding: 12px 30px;
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      background: none;
-      border: none;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .sidebar a:hover,
-    .dropdown-btn:hover {
-      background-color: #014f86;
-    }
-
-    .dropdown-container {
-      display: none;
-      background-color: #014f86;
-    }
-
-    .dropdown-container a {
-      padding-left: 50px;
-      font-size: 14px;
-    }
-
     .main {
       flex: 1;
       padding: 20px;
@@ -68,23 +28,19 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 15px;
-      padding: 15px 0;
+      gap: 10px;
+      padding: 10px 0;
       background-color: #ffffff;
       border-bottom: 1px solid #ccc;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .logo {
-      height: 20px;
-      width: auto;
-      max-width: 120px;
-    }
-
-    .company-name {
-      font-size: 42px;
-      font-weight: bold;
-      color: #012a4a;
+      width: 350px;
+      margin-bottom: 1em;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     h2 {
@@ -96,7 +52,7 @@
       background-color: white;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
     }
 
     table {
@@ -105,7 +61,8 @@
       margin-top: 20px;
     }
 
-    th, td {
+    th,
+    td {
       padding: 12px;
       border: 1px solid #ccc;
       text-align: left;
@@ -120,62 +77,32 @@
       background-color: #f1f1f1;
     }
 
+    .back-btn {
+      margin-top: 20px;
+    }
+
+    .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+    }
+
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
       }
 
-      .company-name {
-        font-size: 28px;
-      }
-
-      .sidebar {
-        width: 100px;
-      }
-
-      .sidebar a, .dropdown-btn {
-        font-size: 14px;
-        padding: 10px;
-        text-align: center;
-      }
-
-      .dropdown-container a {
-        padding-left: 20px;
+      .logo {
+        width: 250px;
       }
     }
   </style>
 </head>
+
 <body>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Omni HR</h2>
-    <a href="dashboard.html">🏠 Dashboard</a>
-    <a href="employee-directory.html">👥 Directory</a>
-
-    <button class="dropdown-btn">🕒 Timesheet ▼</button>
-    <div class="dropdown-container">
-      <a href="timesheet.html">Log Timesheet</a>
-      <a href="view-timesheet.html">View Timesheet</a>
-    </div>
-
-    <button class="dropdown-btn">✈️ Leave ▼</button>
-    <div class="dropdown-container">
-      <a href="leave-management.html">Apply Leave</a>
-      <a href="#">Leave Status</a>
-    </div>
-
-    <button class="dropdown-btn">💳 Payroll ▼</button>
-    <div class="dropdown-container">
-      <a href="payslip.html">Payslip</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
   <div class="main">
     <div class="header">
       <img src="images/logo.png" alt="Logo" class="logo" />
-      <span class="company-name">OMNISOFT SYSTEMS</span>
     </div>
 
     <h2>🕒 View Timesheet</h2>
@@ -195,21 +122,18 @@
         </tbody>
       </table>
     </div>
+
+    <div class="back-btn">
+      <a href="employee-dashboard.html">← Back to Dashboard</a>
+    </div>
   </div>
 
   <script>
-    const dropdowns = document.querySelectorAll(".dropdown-btn");
-    dropdowns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const container = btn.nextElementSibling;
-        container.style.display = container.style.display === "block" ? "none" : "block";
-      });
-    });
-
-    // Fetch timesheet data from backend (dummy fetch for now)
     async function loadTimesheets() {
       try {
-        const response = await fetch("http://localhost:5000/api/timesheets");
+        const response = await fetch("/api/timesheets");
+        if (!response.ok) throw new Error("Failed to load timesheets");
+
         const data = await response.json();
         const tbody = document.getElementById("timesheetTableBody");
 
@@ -225,10 +149,12 @@
         });
       } catch (err) {
         console.error("Error fetching timesheets:", err);
+        alert("Unable to load timesheet data. Please try again later.");
       }
     }
 
     loadTimesheets();
   </script>
 </body>
+
 </html>

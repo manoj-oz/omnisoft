@@ -63,6 +63,11 @@
     input:disabled {
       background-color: #eee;
     }
+       .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -71,42 +76,98 @@
 
     <form id="profileForm">
       <label>Full Name</label>
-      <input type="text" name="name" value="Manoj Chilukuri" disabled />
+      <input type="text" name="fullname" disabled />
 
       <label>Email</label>
-      <input type="email" name="email" value="manoj@example.com" disabled />
+      <input type="email" name="email" disabled />
 
       <label>Department</label>
-      <input type="text" name="department" value="IT" disabled />
+      <input type="text" name="department" disabled />
 
       <label>Designation</label>
-      <input type="text" name="designation" value="Data Engineer" disabled />
+      <input type="text" name="designation" disabled />
 
       <label>Phone</label>
-      <input type="text" name="phone" value="9876543210" disabled />
+      <input type="text" name="phone" disabled />
 
       <label>Address</label>
-      <input type="text" name="address" value="Hyderabad, India" disabled />
+      <input type="text" name="address" disabled />
 
       <div class="btn-container">
         <button type="button" onclick="enableEditing()">Edit</button>
-        <button type="submit">Save</button>
+        <button type="submit" id="saveBtn" disabled>Save</button>
       </div>
     </form>
+    <div class="back-btn">
+      <a href="employee-dashboard.html">← Back to Dashboard</a>
+    </div>
   </div>
 
   <script>
     function enableEditing() {
       const inputs = document.querySelectorAll('#profileForm input');
-      inputs.forEach(input => input.disabled = false);
+      inputs.forEach(input => {
+        if (input.name !== 'email') input.disabled = false;
+      });
+      document.getElementById('saveBtn').disabled = false;
     }
 
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
+    async function loadProfile() {
+      try {
+        const res = await fetch('/employee/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch profile');
+
+        const data = await res.json();
+
+        document.querySelector('input[name="fullname"]').value = data.fullname || '';
+        document.querySelector('input[name="email"]').value = data.email || '';
+        document.querySelector('input[name="department"]').value = data.department || '';
+        document.querySelector('input[name="designation"]').value = data.designation || '';
+        document.querySelector('input[name="phone"]').value = data.phone || '';
+        document.querySelector('input[name="address"]').value = data.address || '';
+      } catch (err) {
+        alert('Error loading profile');
+        console.error(err);
+      }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      alert('Profile updated successfully! (Backend functionality can be integrated here)');
-      const inputs = document.querySelectorAll('#profileForm input');
-      inputs.forEach(input => input.disabled = true);
+
+      const payload = {
+        fullname: document.querySelector('input[name="fullname"]').value,
+        phone: document.querySelector('input[name="phone"]').value,
+        department: document.querySelector('input[name="department"]').value,
+        designation: document.querySelector('input[name="designation"]').value,
+        address: document.querySelector('input[name="address"]').value
+      };
+
+      try {
+        const res = await fetch('/employee/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('Failed to update profile');
+
+        alert('Profile updated successfully!');
+        document.querySelectorAll('#profileForm input').forEach(input => input.disabled = true);
+        document.getElementById('saveBtn').disabled = true;
+      } catch (err) {
+        alert('Failed to update profile');
+        console.error(err);
+      }
     });
+
+    loadProfile();
   </script>
 </body>
 </html>

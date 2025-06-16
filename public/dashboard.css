@@ -1,0 +1,132 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #012a4a;
+  color: white;
+  padding: 20px 0;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.sidebar a,
+.dropdown-btn {
+  display: block;
+  padding: 12px 30px;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.sidebar a:hover,
+.dropdown-btn:hover {
+  background-color: #014f86;
+}
+
+.dropdown-container {
+  display: none;
+  background-color: #014f86;
+}
+
+.dropdown-container a {
+  padding-left: 50px;
+  font-size: 14px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 30px;
+}
+
+.company-name {
+  font-weight: 700;
+  font-size: 40px;
+  color: #012a4a;
+  letter-spacing: 1px;
+}
+
+.logo {
+  width: 350px;
+  margin-bottom: 1em;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  color: #012a4a;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .logo {
+    height: 30px;
+    max-width: 80px;
+  }
+
+  .company-name {
+    font-size: 18px;
+  }
+
+  .sidebar {
+    width: 100px;
+  }
+
+  .sidebar a,
+  .dropdown-btn {
+    font-size: 14px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .dropdown-container a {
+    padding-left: 20px;
+  }
+}

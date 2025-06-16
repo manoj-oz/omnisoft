@@ -21,20 +21,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
+      gap: 10px;
     }
 
     .header h1 {
       color: #012a4a;
+      font-size: 24px;
     }
 
     .search-box input,
     .filters select {
-      padding: 8px 14px;
+      padding: 6px 12px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      margin-left: 10px;
     }
 
     .table-container {
@@ -43,7 +44,7 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     table {
@@ -54,7 +55,7 @@
 
     th, td {
       text-align: left;
-      padding: 12px 15px;
+      padding: 10px 14px;
       border-bottom: 1px solid #eee;
     }
 
@@ -67,55 +68,21 @@
       background-color: #f1f1f1;
     }
 
-    #toggleFormBtn {
-      background-color: #012a4a;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    #toggleFormBtn:hover {
-      background-color: #014f86;
-    }
-
-    form input, form button {
-      display: block;
-      margin: 10px 0;
-      padding: 10px;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    form button {
-      background-color: #012a4a;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-
-    form button:hover {
-      background-color: #014f86;
-    }
-
-    #addEmployeeForm {
-      display: none;
+    .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
     }
 
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
       }
 
-      .search-box input, .filters select {
+      .search-box input,
+      .filters select {
         width: 100%;
-        margin-left: 0;
       }
     }
   </style>
@@ -130,11 +97,14 @@
       <select id="departmentFilter">
         <option value="">All Departments</option>
         <option value="IT">IT</option>
-        <option value="Human Resources">Human Resources</option>
+        <option value="HR">Human Resources</option>
         <option value="Engineering">Engineering</option>
         <option value="Finance">Finance</option>
         <option value="Product">Product</option>
       </select>
+    </div>
+    <div class="back-btn">
+      <a href="admin-dashboard.html">← Back to Dashboard</a>
     </div>
   </div>
 
@@ -154,36 +124,23 @@
     </table>
   </div>
 
-  <button id="toggleFormBtn">➕ Add Employee</button>
-
-  <div class="table-container">
-    <form id="addEmployeeForm">
-      <input type="text" name="fullname" placeholder="Full Name" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="text" name="designation" placeholder="Designation" required>
-      <input type="text" name="department" placeholder="Department" required>
-      <button type="submit">Add Employee</button>
-    </form>
-  </div>
-
   <script>
     const searchInput = document.getElementById("searchInput");
     const departmentFilter = document.getElementById("departmentFilter");
     const tableBody = document.querySelector("#employeeTable tbody");
-    const addForm = document.getElementById("addEmployeeForm");
-    const toggleFormBtn = document.getElementById("toggleFormBtn");
 
     let employeesData = [];
 
-    toggleFormBtn.addEventListener("click", () => {
-      addForm.style.display = addForm.style.display === "none" ? "block" : "none";
-    });
-
     async function loadEmployees() {
-      const response = await fetch('http://localhost:5000/api/employees');
-      const data = await response.json();
-      employeesData = data;
-      displayEmployees(data);
+      try {
+        const response = await fetch('/admin/employees');
+        const data = await response.json();
+        employeesData = data;
+        displayEmployees(data);
+      } catch (err) {
+        console.error("Failed to load employees:", err);
+        tableBody.innerHTML = `<tr><td colspan="4">Failed to fetch data</td></tr>`;
+      }
     }
 
     function displayEmployees(data) {
@@ -192,8 +149,8 @@
         const row = `
           <tr>
             <td>${emp.fullname}</td>
-            <td>${emp.designation}</td>
-            <td>${emp.department}</td>
+            <td>${emp.designation || ''}</td>
+            <td>${emp.department || ''}</td>
             <td>${emp.email}</td>
           </tr>`;
         tableBody.innerHTML += row;
@@ -206,7 +163,7 @@
 
       const filtered = employeesData.filter(emp => {
         const matchSearch = emp.fullname.toLowerCase().includes(query) ||
-                            emp.designation.toLowerCase().includes(query) ||
+                            emp.designation?.toLowerCase().includes(query) ||
                             emp.email.toLowerCase().includes(query);
         const matchDept = !department || emp.department === department;
         return matchSearch && matchDept;
@@ -217,25 +174,6 @@
 
     searchInput.addEventListener("input", applyFilters);
     departmentFilter.addEventListener("change", applyFilters);
-
-    document.getElementById("addEmployeeForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const formData = Object.fromEntries(new FormData(this).entries());
-
-      const response = await fetch('http://localhost:5000/api/employees/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        this.reset();
-        addForm.style.display = "none"; // Hide form after submit
-        await loadEmployees();
-      } else {
-        alert("Failed to add employee.");
-      }
-    });
 
     loadEmployees();
   </script>

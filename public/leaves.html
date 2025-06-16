@@ -3,46 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <title>Leave Details</title>
-  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 5px;
+    }
+
+    .balance {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .balance div {
+      flex: 1;
+      background-color: #e9f5ff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-right: 10px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .balance div:last-child {
+      margin-right: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table thead {
+      background-color: #007bff;
+      color: white;
+    }
+
+    table th, table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    table tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .status-approved {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-rejected {
+      color: red;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      color: orange;
+      font-weight: bold;
+    }
+        .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h2>Leave Balance</h2>
-  <div id="leave-balance"></div>
+  <div class="container">
+    <h2>Leave Balance</h2>
+    <div class="balance">
+      <div id="sick-leave">Sick Leave: 0</div>
+      <div id="casual-leave">Casual Leave: 0</div>
+    </div>
 
-  <h2>Leave History</h2>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="leave-history"></tbody>
-  </table>
+    <h2>Leave History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="leave-history"></tbody>
+    </table>
+    <div class="back-btn">
+      <a href="employee-dashboard.html">← Back to Dashboard</a>
+    </div>
+  </div>
 
   <script>
     fetch('/employee/leaves')
       .then(res => res.json())
       .then(data => {
-        const balanceDiv = document.getElementById('leave-balance');
-        balanceDiv.innerHTML = `
-          <p>Sick Leave: ${data.balance?.sick_leave ?? 0}</p>
-          <p>Casual Leave: ${data.balance?.casual_leave ?? 0}</p>
-        `;
+        // Leave Balance
+        document.getElementById('sick-leave').textContent = `Sick Leave: ${data.balance?.sick_leave ?? 0}`;
+        document.getElementById('casual-leave').textContent = `Casual Leave: ${data.balance?.casual_leave ?? 0}`;
 
-        const historyTbody = document.getElementById('leave-history');
+        // Leave History Table
+        const tbody = document.getElementById('leave-history');
         data.history.forEach(leave => {
-          historyTbody.innerHTML += `
-            <tr>
-              <td>${leave.leave_type}</td>
-              <td>${leave.start_date}</td>
-              <td>${leave.end_date}</td>
-              <td>${leave.status}</td>
-            </tr>
+          const tr = document.createElement('tr');
+
+          tr.innerHTML = `
+            <td>${leave.leave_type}</td>
+            <td>${leave.start_date}</td>
+            <td>${leave.end_date}</td>
+            <td class="status-${leave.status.toLowerCase()}">${leave.status}</td>
           `;
+
+          tbody.appendChild(tr);
         });
+      })
+      .catch(err => {
+        console.error("Failed to fetch leave data:", err);
+        document.getElementById('leave-history').innerHTML = `<tr><td colspan="4">Failed to load leave history.</td></tr>`;
       });
   </script>
 </body>
