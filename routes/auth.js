@@ -60,11 +60,14 @@ router.post('/login', async (req, res) => {
 
     // First login - force password reset
     if (user.is_first_login) {
-      return res.redirect('/reset-password.html');
+      return res.status(200).json({ redirectTo: '/reset-password.html' });
     }
 
     // Role-based redirect
-    return res.redirect(user.role === 'admin' ? '/admin-dashboard.html' : '/employee-dashboard.html');
+    return res.status(200).json({
+      message: 'Login successful',
+      redirectTo: user.role === 'admin' ? '/admin-dashboard.html' : '/employee-dashboard.html'
+    });
 
   } catch (err) {
     console.error("Login error:", err);
@@ -93,7 +96,7 @@ router.post('/reset-password', async (req, res) => {
       [hashed, userId]
     );
 
-    res.redirect('/employee-dashboard.html');
+    res.status(200).json({ message: 'Password reset successful', redirectTo: '/employee-dashboard.html' });
 
   } catch (err) {
     console.error("Password reset error:", err);
@@ -109,11 +112,10 @@ router.get('/logout', (req, res) => {
       return res.status(500).send("Logout failed");
     }
 
-    // Clear session cookie
     res.clearCookie('connect.sid', {
       path: '/',
       httpOnly: true,
-      secure: false  // Change to true if using HTTPS
+      secure: false  // Set to true if using HTTPS
     });
 
     return res.redirect('/login.html');

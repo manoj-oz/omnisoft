@@ -6,53 +6,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Employee Onboarding - Omni HR</title>
   <style>
-    body {
-      background-color: #f5f7fa;
+    * {
+      box-sizing: border-box;
       font-family: 'Segoe UI', sans-serif;
-      padding: 40px;
     }
 
-    .onboarding-container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: #fff;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 40px 30px;
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 20px;
+      width: 180px;
     }
 
     h2 {
       text-align: center;
       color: #012a4a;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
+    }
+
+    h3 {
+      color: #012a4a;
+      margin: 30px 0 10px;
     }
 
     label {
+      font-weight: 600;
+      color: #333;
       display: block;
       margin-bottom: 6px;
-      color: #012a4a;
-      font-weight: bold;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 20px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      font-size: 15px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 8px;
     }
 
     button {
-      background-color: #012a4a;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
       width: 100%;
+      padding: 14px;
+      background-color: #012a4a;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     button:hover {
@@ -60,54 +85,54 @@
     }
 
     .back-btn {
-      display: block;
       text-align: center;
       margin-top: 20px;
     }
 
     .back-btn a {
-      text-decoration: none;
       color: #012a4a;
+      text-decoration: none;
       font-weight: bold;
     }
 
     #result {
-      margin-top: 20px;
+      display: none;
       padding: 15px;
       background-color: #e0f7fa;
-      border-left: 5px solid #012a4a;
-      display: none;
+      border-left: 4px solid #012a4a;
+      margin-top: 20px;
+      border-radius: 6px;
     }
 
-    .logo {
-      width: 350px;
-      /* You can adjust the size */
-      margin-bottom: 1em;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 25px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="onboarding-container">
-    <img src="images/logo.png" alt="My Logo" class="logo" />
+  <div class="container">
+    <img src="images/logo.png" alt="Company Logo" class="logo" />
     <h2>New Employee Onboarding</h2>
 
     <form id="onboardingForm">
+      <!-- Personal Details -->
+      <h3>Personal Information</h3>
       <label for="fullname">Full Name</label>
-      <input type="text" id="fullname" name="fullname" required>
+      <input type="text" id="fullname" name="fullname" required pattern="^[A-Za-z\s]+$" title="Only letters and spaces allowed">
 
       <label for="phone">Phone Number</label>
-      <input type="tel" id="phone" name="phone" required>
+      <input type="tel" id="phone" name="phone" required pattern="^\d{10}$" title="Enter a valid 10-digit phone number">
 
       <label for="gender">Gender</label>
       <select id="gender" name="gender" required>
         <option value="">Select</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
       </select>
 
       <label for="dob">Date of Birth</label>
@@ -116,22 +141,29 @@
       <label for="personalEmail">Personal Email</label>
       <input type="email" id="personalEmail" name="personalEmail" required>
 
+      <label for="address">Address</label>
+      <textarea id="address" name="address" rows="3" required></textarea>
 
+      <label for="emergency">Emergency Contact</label>
+      <input type="text" id="emergency" name="emergency" required>
+
+      <!-- Job Details -->
+      <h3>Job Information</h3>
       <label for="designation">Designation</label>
       <input type="text" id="designation" name="designation" required>
 
       <label for="department">Department</label>
       <select id="department" name="department" required>
         <option value="">Select</option>
-        <option value="IT">IT</option>
-        <option value="Engineering">Engineering</option>
-        <option value="HR">HR</option>
-        <option value="Finance">Finance</option>
-        <option value="Marketing">Marketing</option>
+        <option>IT</option>
+        <option>Engineering</option>
+        <option>HR</option>
+        <option>Finance</option>
+        <option>Marketing</option>
       </select>
 
-      <label for="experience">Total Experience (in years)</label>
-      <input type="number" id="experience" name="experience" step="0.1" min="0">
+      <label for="experience">Total Experience (years)</label>
+      <input type="number" id="experience" name="experience" step="0.1" min="0" max="50" required>
 
       <label for="prevOrg">Previous Organization</label>
       <input type="text" id="prevOrg" name="prevOrg">
@@ -139,22 +171,16 @@
       <label for="startDate">Start Date</label>
       <input type="date" id="startDate" name="startDate" required>
 
-      <label for="address">Address</label>
-      <textarea id="address" name="address" rows="3" required></textarea>
-
-      <label for="emergency">Emergency Contact</label>
-      <input type="text" id="emergency" name="emergency" required>
-
-      <hr style="margin: 30px 0;">
-      <h3 style="color: #012a4a;">Previous Organisation Documents </h3>
+      <!-- Documents -->
+      <h3>Previous Organization Documents</h3>
 
       <label for="resume">Upload Resume</label>
-      <input type="file" id="resume" name="resume">
+      <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx">
 
       <label for="pf">PF Account Details</label>
       <input type="file" id="pf" name="pf">
 
-      <label for="offerLetter">Previous Offer Letter</label>
+      <label for="offerLetter">Offer Letter</label>
       <input type="file" id="offerLetter" name="offerLetter">
 
       <label for="form16">Form 16</label>
@@ -162,7 +188,6 @@
 
       <label for="payslips">Payslips</label>
       <input type="file" id="payslips" name="payslips">
-
 
       <button type="submit">Submit</button>
     </form>
@@ -173,34 +198,45 @@
       <a href="admin-dashboard.html">← Back to Dashboard</a>
     </div>
   </div>
-  <!-- 🔽 Only JS section is updated below -->
+
   <script>
     const form = document.getElementById('onboardingForm');
     const result = document.getElementById('result');
+    const dob = document.getElementById('dob');
+    dob.max = new Date().toISOString().split("T")[0];
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(form);
+      const resume = document.getElementById('resume').files[0];
+      if (resume) {
+        const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowed.includes(resume.type)) {
+          return alert("Resume must be a PDF or Word file.");
+        }
+        if (resume.size > 2 * 1024 * 1024) {
+          return alert("Resume must be less than 2MB.");
+        }
+      }
 
+      const formData = new FormData(form);
       try {
         const res = await fetch('/admin/onboard', {
           method: 'POST',
-          body: formData // ⬅️ No need for headers, FormData handles content-type
+          body: formData
         });
 
-        const data = await res.text(); // Backend returns HTML
-
+        const data = await res.text();
         if (res.ok) {
           result.style.display = 'block';
-          result.innerHTML = data; // Show backend's success message
+          result.innerHTML = data;
           form.reset();
         } else {
-          alert('Onboarding failed. Please try again.');
+          alert("Onboarding failed.");
         }
       } catch (err) {
-        console.error('Error:', err);
-        alert('Server error. Try again later.');
+        console.error(err);
+        alert("Server error. Please try again later.");
       }
     });
   </script>

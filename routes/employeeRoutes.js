@@ -1,7 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const pool = require('../db');
-
 const router = express.Router();
 
 // ========= Dashboard Data =========
@@ -10,7 +9,6 @@ router.get('/dashboard-data', async (req, res) => {
     const userId = req.session.userId;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
 
-    // Fetch name and dob from employee_onboarding
     const result = await pool.query(
       `SELECT fullname, dob FROM employee_onboarding WHERE user_id = $1`,
       [userId]
@@ -21,12 +19,9 @@ router.get('/dashboard-data', async (req, res) => {
     }
 
     const { fullname, dob } = result.rows[0];
-
-    // Check if today is the employee's birthday
     const today = new Date();
     const dobDate = new Date(dob);
-    const isBirthday =
-      dobDate.getDate() === today.getDate() && dobDate.getMonth() === today.getMonth();
+    const isBirthday = dobDate.getDate() === today.getDate() && dobDate.getMonth() === today.getMonth();
 
     res.json({
       name: fullname,
@@ -48,12 +43,9 @@ router.post('/change-password', async (req, res) => {
   try {
     const result = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
 
-    if (result.rows.length === 0) {
-      return res.status(404).send('User not found');
-    }
+    if (result.rows.length === 0) return res.status(404).send('User not found');
 
-    const user = result.rows[0];
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(currentPassword, result.rows[0].password);
     if (!isMatch) return res.status(401).send('Incorrect current password');
 
     const hashedNew = await bcrypt.hash(newPassword, 10);
@@ -83,9 +75,7 @@ router.get('/profile', async (req, res) => {
       WHERE user_id = $1
     `, [userId]);
 
-    if (result.rows.length === 0) {
-      return res.status(404).send('Profile not found');
-    }
+    if (result.rows.length === 0) return res.status(404).send('Profile not found');
 
     res.json(result.rows[0]);
   } catch (err) {
@@ -113,6 +103,58 @@ router.put('/profile', async (req, res) => {
     res.sendStatus(200);
   } catch (err) {
     console.error('Profile update error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// ========= Submit Leave Request =========
+router.post('/leave-request', async (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) return res.status(401).send('Unauthorized');
+
+  const { leave_type, from_date, to_date, reason } = req.body;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (new Date(from_date) < today) {
+    return res.status(400).send('From date must be today or a future date');
+  }
+
+  try {
+    // Get employee_id from employee_onboarding
+    const employee = await pool.query('SELECT id FROM employee_onboarding WHERE user_id = $1', [userId]);
+    if (employee.rows.length === 0) {
+      return res.status(400).send('Employee onboarding record not found.');
+    }
+
+    const employeeId = employee.rows[0].id;
+
+    await pool.query(
+      `INSERT INTO leave_requests (employee_id, leave_type, from_date, to_date, reason)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [employeeId, leave_type, from_date, to_date, reason]
+    );
+
+    res.send('Leave request submitted');
+  } catch (err) {
+    console.error('Leave request error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// ========= Get Leave History =========
+router.get('/leave-history/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM leave_requests WHERE employee_id = $1 ORDER BY applied_on DESC',
+      [id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Leave history error:', err);
     res.status(500).send('Server error');
   }
 });

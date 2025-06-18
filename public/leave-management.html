@@ -1,109 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leave Management - Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Leave Dashboard</title>
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', sans-serif;
     }
 
     body {
-      display: flex;
-      min-height: 100vh;
       background-color: #f5f7fa;
-    }
-
-    .sidebar {
-      width: 220px;
-      background-color: #012a4a;
-      color: white;
-      padding: 20px 0;
-    }
-
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .sidebar a,
-    .dropdown-btn {
-      display: block;
-      padding: 12px 30px;
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      background: none;
-      border: none;
-      text-align: left;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .sidebar a:hover,
-    .dropdown-btn:hover {
-      background-color: #014f86;
-    }
-
-    .dropdown-container {
-      display: none;
-      background-color: #014f86;
-    }
-
-    .dropdown-container a {
-      padding-left: 50px;
-      font-size: 14px;
-    }
-
-    .main {
-      flex: 1;
+      margin: 0;
       padding: 20px;
     }
 
-    .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
-      padding: 15px 0;
-      background-color: #ffffff;
-      border-bottom: 1px solid #ccc;
+    h1 {
+      color: #012a4a;
+      text-align: center;
       margin-bottom: 30px;
     }
 
-    .logo {
-      height: 20px;
-      width: auto;
-      max-width: 120px;
+    .stats {
+      display: flex;
+      gap: 20px;
+      justify-content: space-around;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
     }
 
-    .company-name {
-      font-size: 42px;
+    .card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      flex: 1 1 30%;
+      min-width: 250px;
+    }
+
+    .card h3 {
+      margin: 0;
+      color: #014f86;
+    }
+
+    .card p {
+      font-size: 24px;
+      margin-top: 10px;
       font-weight: bold;
-      color: #012a4a;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #012a4a;
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
       background-color: white;
-      border-radius: 8px;
+      border-collapse: collapse;
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
     }
 
     th, td {
-      padding: 12px 16px;
+      padding: 14px;
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
@@ -115,10 +74,16 @@
 
     .btn {
       padding: 6px 12px;
+      margin: 2px;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
       color: white;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
     }
 
     .approve {
@@ -129,103 +94,158 @@
       background-color: #e74c3c;
     }
 
-    @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100px;
-      }
-
-      .sidebar a,
-      .dropdown-btn {
-        font-size: 14px;
-        padding: 10px;
-        text-align: center;
-      }
-
-      .dropdown-container a {
-        padding-left: 20px;
-      }
+    h2 {
+      color: #012a4a;
+      margin-bottom: 20px;
     }
   </style>
 </head>
-
 <body>
-  <div class="sidebar">
-    <h2>Omni HR</h2>
-    <a href="dashboard.html">🏠 Dashboard</a>
-    <a href="employee-directory.html">👥 Directory</a>
 
-    <button class="dropdown-btn">👤 Profile ▼</button>
-    <div class="dropdown-container">
-      <a href="#">View Profile</a>
-      <a href="#">Edit Profile</a>
-      <a href="#">Logout</a>
+  <h1>Admin Leave Management Panel</h1>
+
+  <!-- Dashboard Cards -->
+  <div class="stats">
+    <div class="card">
+      <h3>Employees on Leave Today</h3>
+      <p id="onLeaveToday">0</p>
     </div>
-
-    <button class="dropdown-btn">✈️ Leave ▼</button>
-    <div class="dropdown-container">
-      <a href="#">Apply Leave</a>
-      <a href="#">Leave Status</a>
-      <a href="#">Leave History</a>
+    <div class="card">
+      <h3>Total Pending Requests</h3>
+      <p id="pendingRequests">0</p>
     </div>
-
-    <button class="dropdown-btn">💳 Payroll ▼</button>
-    <div class="dropdown-container">
-      <a href="#">Payslip</a>
-      <a href="#">Tax Info</a>
-      <a href="#">Bank Details</a>
+    <div class="card">
+      <h3>Total Employees</h3>
+      <p id="totalEmployees">0</p>
     </div>
   </div>
 
-  <div class="main">
-    <div class="header">
-      <img src="images/logo.png" alt="Logo" class="logo" />
-      <span class="company-name">OMNISOFT SYSTEMS</span>
-    </div>
+  <!-- Leave Requests Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Leave Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Reason</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="leaveTableBody">
+      <!-- Dynamic leave rows inserted here -->
+    </tbody>
+  </table>
 
-    <h2>Leave Management — Admin View</h2>
+  <!-- Leave Balances Table -->
+  <h2>Employee Leave Balances</h2>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Employee</th>
-          <th>Leave Type</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Reason</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Manoj Chilukuri</td>
-          <td>Annual</td>
-          <td>2025-06-15</td>
-          <td>2025-06-20</td>
-          <td>Vacation</td>
-          <td>Pending</td>
-          <td>
-            <button class="btn approve">Approve</button>
-            <button class="btn reject">Reject</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Casual Leave (Used / Total)</th>
+        <th>Sick Leave (Used / Total)</th>
+        <th>Earned Leave (Used / Total)</th>
+      </tr>
+    </thead>
+    <tbody id="leaveBalanceBody">
+      <!-- Dynamic employee leave data -->
+    </tbody>
+  </table>
 
   <script>
-    const dropdowns = document.querySelectorAll(".dropdown-btn");
-    dropdowns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const container = btn.nextElementSibling;
-        container.style.display = container.style.display === "block" ? "none" : "block";
-      });
-    });
-  </script>
-</body>
+    async function fetchAndRenderData() {
+      try {
+        // 1. Fetch leave requests
+        const leaveRes = await fetch('/admin/leave-requests');
+        const leaves = await leaveRes.json();
 
+        const tbody = document.getElementById('leaveTableBody');
+        tbody.innerHTML = '';
+        let pendingCount = 0;
+        let onLeaveTodayCount = 0;
+        const today = new Date().toISOString().split('T')[0];
+
+        leaves.forEach(leave => {
+          const from = leave.from_date;
+          const to = leave.to_date;
+
+          if (leave.status === 'Pending') pendingCount++;
+          if (from <= today && to >= today && leave.status === 'Approved') onLeaveTodayCount++;
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${leave.fullname}</td>
+            <td>${leave.leave_type}</td>
+            <td>${leave.from_date}</td>
+            <td>${leave.to_date}</td>
+            <td>${leave.reason}</td>
+            <td>${leave.status}</td>
+            <td>
+              <button class="btn approve" onclick="updateStatus(${leave.id}, 'Approved')">Approve</button>
+              <button class="btn reject" onclick="updateStatus(${leave.id}, 'Rejected')">Reject</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        document.getElementById('pendingRequests').innerText = pendingCount;
+        document.getElementById('onLeaveToday').innerText = onLeaveTodayCount;
+
+        // 2. Fetch stats (total employees)
+        const statsRes = await fetch('/admin/stats');
+        const stats = await statsRes.json();
+        document.getElementById('totalEmployees').innerText = stats.totalEmployees;
+
+        // 3. Fetch leave balances
+        const balanceRes = await fetch('/admin/leave-balances');
+        const balances = await balanceRes.json();
+
+        const balanceBody = document.getElementById('leaveBalanceBody');
+        balanceBody.innerHTML = '';
+
+        balances.forEach(emp => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${emp.fullname}</td>
+            <td>${emp.casual_used} / ${emp.casual_total}</td>
+            <td>${emp.sick_used} / ${emp.sick_total}</td>
+            <td>${emp.earned_used} / ${emp.earned_total}</td>
+          `;
+          balanceBody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Error fetching data", err);
+        alert("Failed to load data. Please try again.");
+      }
+    }
+
+   
+    
+
+    function updateStatus(id, status) {
+  fetch(`/admin/leaves/${id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    location.reload();
+  })
+  .catch(err => {
+    console.error('Update error:', err);
+    alert('Failed to update leave status.');
+  });
+}
+
+
+    window.onload = fetchAndRenderData;
+  </script>
+
+</body>
 </html>

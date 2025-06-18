@@ -33,37 +33,41 @@
     </form>
   </div>
 
-  <script>
-    const form = document.getElementById('loginForm');
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
+ <script>
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-      if (!email.endsWith('@omnisoftsystems.com')) {
-        alert('Only @omnisoftsystems.com emails are allowed.');
+    if (!email.endsWith('@omnisoftsystems.com')) {
+      alert('Only @omnisoftsystems.com emails are allowed.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        alert(errText || 'Login failed');
         return;
       }
 
-      try {
-        const res = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
+      const data = await res.json();
+      window.location.href = data.redirectTo;
 
-        if (res.redirected) {
-          window.location.href = res.url;
-        } else {
-          const errMsg = await res.text();
-          alert(errMsg || 'Login failed.');
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Something went wrong!');
-      }
-    });
-  </script>
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong!');
+    }
+  });
+</script>
+
 </body>
 </html>

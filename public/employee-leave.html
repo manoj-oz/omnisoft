@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leave Management - Omni HR</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #012a4a;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #012a4a;
+      color: white;
+    }
+
+    form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #012a4a;
+    }
+
+    form input, form select, form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #012a4a;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 20px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #014f86;
+    }
+
+    .back-btn {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+    }
+
+    .leave-history {
+      margin-top: 40px;
+    }
+
+    .leave-history h3 {
+      margin-bottom: 10px;
+      color: #012a4a;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Leave Management</h2>
+
+    <!-- Leave Summary -->
+    <table id="balanceTable">
+      <thead>
+        <tr>
+          <th>Leave Type</th>
+          <th>Available</th>
+          <th>Used</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic content -->
+      </tbody>
+    </table>
+
+    <!-- Leave Request Form -->
+    <form id="leaveForm">
+      <label for="leaveType">Leave Type</label>
+      <select id="leaveType" name="leave_type" required>
+        <option value="">Select</option>
+        <option value="Casual">Casual</option>
+        <option value="Sick">Sick</option>
+        <option value="Earned">Earned</option>
+      </select>
+
+      <label for="fromDate">From Date</label>
+      <input type="date" id="fromDate" name="from_date" required>
+
+      <label for="toDate">To Date</label>
+      <input type="date" id="toDate" name="to_date" required>
+
+      <label for="reason">Reason</label>
+      <textarea id="reason" name="reason" rows="3" required></textarea>
+
+      <button type="submit">Apply for Leave</button>
+    </form>
+
+    <!-- Leave History -->
+    <div class="leave-history">
+      <h3>Your Leave History</h3>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Applied On</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="back-btn">
+      <a href="employee-dashboard.html">← Back to Dashboard</a>
+    </div>
+  </div>
+
+<script>
+  const leaveForm = document.getElementById('leaveForm');
+  const fromDateInput = document.getElementById('fromDate');
+  const toDateInput = document.getElementById('toDate');
+  const historyTableBody = document.querySelector("#historyTable tbody");
+  const balanceTableBody = document.querySelector("#balanceTable tbody");
+
+  const today = new Date().toISOString().split('T')[0];
+  fromDateInput.min = today;
+  toDateInput.min = today;
+
+  fromDateInput.addEventListener('change', () => {
+    toDateInput.min = fromDateInput.value;
+  });
+
+  const employeeId = localStorage.getItem('employee_id'); // stored at login
+
+  leaveForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(leaveForm);
+    const data = Object.fromEntries(formData.entries());
+    data.employee_id = employeeId;
+
+    const from = new Date(data.from_date);
+    const to = new Date(data.to_date);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (from < now) {
+      alert("From Date must be today or a future date.");
+      return;
+    }
+
+    if (to < from) {
+      alert("To Date cannot be earlier than From Date.");
+      return;
+    }
+
+    try {
+      const res = await fetch('/employee/leave-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.text();
+      if (res.ok) {
+        alert('Leave request submitted successfully!');
+        leaveForm.reset();
+        fromDateInput.min = today;
+        toDateInput.min = today;
+        fetchLeaveHistory();
+        fetchLeaveBalance();
+      } else {
+        alert('Leave request failed: ' + result);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Server error. Try again later.');
+    }
+  });
+
+  async function fetchLeaveHistory() {
+    if (!employeeId) return;
+    try {
+      const res = await fetch(`/employee/leave-history/${employeeId}`);
+      const leaves = await res.json();
+      historyTableBody.innerHTML = '';
+      leaves.forEach(row => {
+        historyTableBody.innerHTML += `
+          <tr>
+            <td>${row.leave_type}</td>
+            <td>${row.start_date}</td>
+            <td>${row.end_date}</td>
+            <td>${row.status}</td>
+            <td>${new Date(row.applied_on).toLocaleDateString()}</td>
+          </tr>`;
+      });
+    } catch (err) {
+      console.error("Failed to fetch history", err);
+    }
+  }
+
+  async function fetchLeaveBalance() {
+    if (!employeeId) return;
+    try {
+      const res = await fetch(`/employee/leave-balance/${employeeId}`);
+      const balance = await res.json();
+
+      balanceTableBody.innerHTML = `
+        <tr>
+          <td>Casual Leave</td>
+          <td>${balance.casual_total - balance.casual_used}</td>
+          <td>${balance.casual_used}</td>
+        </tr>
+        <tr>
+          <td>Sick Leave</td>
+          <td>${balance.sick_total - balance.sick_used}</td>
+          <td>${balance.sick_used}</td>
+        </tr>
+        <tr>
+          <td>Earned Leave</td>
+          <td>${balance.earned_total - balance.earned_used}</td>
+          <td>${balance.earned_used}</td>
+        </tr>`;
+    } catch (err) {
+      console.error("Failed to fetch balance", err);
+    }
+  }
+
+  fetchLeaveBalance();
+  fetchLeaveHistory();
+</script>
+
+</body>
+</html>
