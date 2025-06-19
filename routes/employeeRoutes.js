@@ -10,7 +10,7 @@ router.get('/dashboard-data', async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
 
     const result = await pool.query(
-      `SELECT fullname, dob FROM employee_onboarding WHERE user_id = $1`,
+      `SELECT e.fullname, e.dob FROM employees e JOIN users u ON e.user_id = u.id WHERE e.user_id = $1`,
       [userId]
     );
 
@@ -42,7 +42,6 @@ router.post('/change-password', async (req, res) => {
 
   try {
     const result = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
-
     if (result.rows.length === 0) return res.status(404).send('User not found');
 
     const isMatch = await bcrypt.compare(currentPassword, result.rows[0].password);
@@ -50,11 +49,10 @@ router.post('/change-password', async (req, res) => {
 
     const hashedNew = await bcrypt.hash(newPassword, 10);
 
-    await pool.query(`
-      UPDATE users
-      SET password = $1, is_first_login = false, default_password = false
-      WHERE id = $2
-    `, [hashedNew, userId]);
+    await pool.query(
+      `UPDATE users SET password = $1, is_first_login = false, default_password = false WHERE id = $2`,
+      [hashedNew, userId]
+    );
 
     res.sendStatus(200);
   } catch (err) {
@@ -69,11 +67,10 @@ router.get('/profile', async (req, res) => {
   if (!userId) return res.status(401).send('Unauthorized');
 
   try {
-    const result = await pool.query(`
-      SELECT fullname, email, department, designation, phone, address
-      FROM employee_onboarding
-      WHERE user_id = $1
-    `, [userId]);
+    const result = await pool.query(
+      `SELECT fullname, email, department, designation, phone, address FROM employees WHERE user_id = $1`,
+      [userId]
+    );
 
     if (result.rows.length === 0) return res.status(404).send('Profile not found');
 
@@ -92,11 +89,10 @@ router.put('/profile', async (req, res) => {
   const { fullname, phone, department, designation, address } = req.body;
 
   try {
-    await pool.query(`
-      UPDATE employee_onboarding
-      SET fullname = $1, phone = $2, department = $3, designation = $4, address = $5
-      WHERE user_id = $6
-    `, [fullname, phone, department, designation, address, userId]);
+    await pool.query(
+      `UPDATE employees SET fullname = $1, phone = $2, department = $3, designation = $4, address = $5 WHERE user_id = $6`,
+      [fullname, phone, department, designation, address, userId]
+    );
 
     await pool.query(`UPDATE users SET fullname = $1 WHERE id = $2`, [fullname, userId]);
 
@@ -122,13 +118,12 @@ router.post('/leave-request', async (req, res) => {
   }
 
   try {
-    // Get employee_id from employee_onboarding
-    const employee = await pool.query('SELECT id FROM employee_onboarding WHERE user_id = $1', [userId]);
+    const employee = await pool.query('SELECT employee_id FROM employees WHERE user_id = $1', [userId]);
     if (employee.rows.length === 0) {
-      return res.status(400).send('Employee onboarding record not found.');
+      return res.status(400).send('Employee record not found.');
     }
 
-    const employeeId = employee.rows[0].id;
+    const employeeId = employee.rows[0].employee_id;
 
     await pool.query(
       `INSERT INTO leave_requests (employee_id, leave_type, from_date, to_date, reason)
@@ -144,13 +139,13 @@ router.post('/leave-request', async (req, res) => {
 });
 
 // ========= Get Leave History =========
-router.get('/leave-history/:id', async (req, res) => {
-  const { id } = req.params;
+router.get('/leave-history/:employeeId', async (req, res) => {
+  const { employeeId } = req.params;
 
   try {
     const result = await pool.query(
       'SELECT * FROM leave_requests WHERE employee_id = $1 ORDER BY applied_on DESC',
-      [id]
+      [employeeId]
     );
     res.json(result.rows);
   } catch (err) {

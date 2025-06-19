@@ -5,29 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin - Leave Dashboard</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #012a4a;
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #f5f7fa; margin: 0; padding: 20px; }
+    h1 { color: #012a4a; text-align: center; margin-bottom: 30px; }
 
     .stats {
       display: flex;
       gap: 20px;
       justify-content: space-around;
       margin-bottom: 30px;
-      flex-wrap: wrap;
     }
 
     .card {
@@ -36,20 +22,11 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
-      flex: 1 1 30%;
-      min-width: 250px;
+      flex: 1;
     }
 
-    .card h3 {
-      margin: 0;
-      color: #014f86;
-    }
-
-    .card p {
-      font-size: 24px;
-      margin-top: 10px;
-      font-weight: bold;
-    }
+    .card h3 { margin: 0; color: #014f86; }
+    .card p { font-size: 24px; margin-top: 10px; font-weight: bold; }
 
     table {
       width: 100%;
@@ -58,7 +35,6 @@
       border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 0 8px rgba(0,0,0,0.05);
-      margin-bottom: 40px;
     }
 
     th, td {
@@ -67,10 +43,7 @@
       border-bottom: 1px solid #ddd;
     }
 
-    th {
-      background-color: #014f86;
-      color: white;
-    }
+    th { background-color: #014f86; color: white; }
 
     .btn {
       padding: 6px 12px;
@@ -79,25 +52,10 @@
       border-radius: 5px;
       color: white;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
 
-    .btn:hover {
-      opacity: 0.9;
-    }
-
-    .approve {
-      background-color: #27ae60;
-    }
-
-    .reject {
-      background-color: #e74c3c;
-    }
-
-    h2 {
-      color: #012a4a;
-      margin-bottom: 20px;
-    }
+    .approve { background-color: #27ae60; }
+    .reject { background-color: #e74c3c; }
   </style>
 </head>
 <body>
@@ -120,7 +78,7 @@
     </div>
   </div>
 
-  <!-- Leave Requests Table -->
+  <!-- Leave Request Table -->
   <table>
     <thead>
       <tr>
@@ -134,46 +92,28 @@
       </tr>
     </thead>
     <tbody id="leaveTableBody">
-      <!-- Dynamic leave rows inserted here -->
-    </tbody>
-  </table>
-
-  <!-- Leave Balances Table -->
-  <h2>Employee Leave Balances</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Employee</th>
-        <th>Casual Leave (Used / Total)</th>
-        <th>Sick Leave (Used / Total)</th>
-        <th>Earned Leave (Used / Total)</th>
-      </tr>
-    </thead>
-    <tbody id="leaveBalanceBody">
-      <!-- Dynamic employee leave data -->
+      <!-- Dynamic rows inserted here -->
     </tbody>
   </table>
 
   <script>
     async function fetchAndRenderData() {
       try {
-        // 1. Fetch leave requests
-        const leaveRes = await fetch('/admin/leave-requests');
-        const leaves = await leaveRes.json();
+        const res = await fetch('/admin/leave-requests');
+        const leaves = await res.json();
 
         const tbody = document.getElementById('leaveTableBody');
         tbody.innerHTML = '';
-        let pendingCount = 0;
-        let onLeaveTodayCount = 0;
-        const today = new Date().toISOString().split('T')[0];
+
+        let pending = 0;
+        let onLeaveToday = 0;
+        const today = new Date();
 
         leaves.forEach(leave => {
-          const from = leave.from_date;
-          const to = leave.to_date;
-
-          if (leave.status === 'Pending') pendingCount++;
-          if (from <= today && to >= today && leave.status === 'Approved') onLeaveTodayCount++;
+          const from = new Date(leave.from_date);
+          const to = new Date(leave.to_date);
+          if (leave.status === 'Pending') pending++;
+          if (leave.status === 'Approved' && from <= today && to >= today) onLeaveToday++;
 
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -184,68 +124,38 @@
             <td>${leave.reason}</td>
             <td>${leave.status}</td>
             <td>
-              <button class="btn approve" onclick="updateStatus(${leave.id}, 'Approved')">Approve</button>
-              <button class="btn reject" onclick="updateStatus(${leave.id}, 'Rejected')">Reject</button>
+              ${leave.status === 'Pending' ? `
+                <button class="btn approve" onclick="updateStatus(${leave.id}, 'Approved')">Approve</button>
+                <button class="btn reject" onclick="updateStatus(${leave.id}, 'Rejected')">Reject</button>
+              ` : ''}
             </td>
           `;
           tbody.appendChild(row);
         });
 
-        document.getElementById('pendingRequests').innerText = pendingCount;
-        document.getElementById('onLeaveToday').innerText = onLeaveTodayCount;
+        document.getElementById('pendingRequests').innerText = pending;
+        document.getElementById('onLeaveToday').innerText = onLeaveToday;
 
-        // 2. Fetch stats (total employees)
         const statsRes = await fetch('/admin/stats');
         const stats = await statsRes.json();
         document.getElementById('totalEmployees').innerText = stats.totalEmployees;
-
-        // 3. Fetch leave balances
-        const balanceRes = await fetch('/admin/leave-balances');
-        const balances = await balanceRes.json();
-
-        const balanceBody = document.getElementById('leaveBalanceBody');
-        balanceBody.innerHTML = '';
-
-        balances.forEach(emp => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${emp.fullname}</td>
-            <td>${emp.casual_used} / ${emp.casual_total}</td>
-            <td>${emp.sick_used} / ${emp.sick_total}</td>
-            <td>${emp.earned_used} / ${emp.earned_total}</td>
-          `;
-          balanceBody.appendChild(row);
-        });
-
       } catch (err) {
-        console.error("Error fetching data", err);
-        alert("Failed to load data. Please try again.");
+        console.error("Error fetching leaves:", err);
       }
     }
 
-   
-    
-
-    function updateStatus(id, status) {
-  fetch(`/admin/leaves/${id}/status`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    location.reload();
-  })
-  .catch(err => {
-    console.error('Update error:', err);
-    alert('Failed to update leave status.');
-  });
-}
-
+    async function updateStatus(id, action) {
+      const res = await fetch(`/admin/leave-requests/${id}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      const msg = await res.text();
+      alert(msg);
+      fetchAndRenderData();
+    }
 
     window.onload = fetchAndRenderData;
   </script>
-
 </body>
 </html>

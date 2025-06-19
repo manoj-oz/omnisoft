@@ -10,13 +10,11 @@ const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
-// === Password generator ===
 function generatePassword(length = 10) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-// === Multer Setup ===
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
@@ -31,7 +29,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// === POST /onboard - Add New Employee ===
+// === POST /onboard ===
 router.post('/onboard', upload.fields([
   { name: 'resume' },
   { name: 'pf' },
@@ -60,6 +58,8 @@ router.post('/onboard', upload.fields([
 
     const userId = userInsert.rows[0].id;
 
+    const employeeId = `EMP${userId.toString().padStart(4, '0')}`;
+
     const resume = req.files?.resume?.[0]?.filename || null;
     const pf = req.files?.pf?.[0]?.filename || null;
     const offerLetter = req.files?.offerLetter?.[0]?.filename || null;
@@ -67,20 +67,27 @@ router.post('/onboard', upload.fields([
     const payslips = req.files?.payslips?.[0]?.filename || null;
 
     await pool.query(`
-      INSERT INTO employee_onboarding (
-        user_id, fullname, email, phone, gender, dob, designation, department,
-        experience, prev_org, start_date, address, emergency_contact,
-        resume, pf_details, offer_letter, form16, payslips, personal_email
-      ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8,
-        $9, $10, $11, $12, $13,
-        $14, $15, $16, $17, $18, $19
-      )
-    `, [
-      userId, fullname, email, phone, gender, dob, designation, department,
-      experience || null, prevOrg || null, startDate, address, emergency,
-      resume, pf, offerLetter, form16, payslips || null, personalEmail || null
+  INSERT INTO employees (
+    user_id, employee_id, fullname, personalEmail, phone, gender, dob, designation, department,
+    experience, prev_org, start_date, address, emergency_contact,email,password
+  ) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+    $10, $11, $12, $13, $14, $15, $16
+  )
+`, [
+      userId, employeeId, fullname, personalEmail, phone, gender, dob, designation, department,
+      experience || null, prevOrg || null, startDate, address, emergency, email, hashedPassword
     ]);
+    await pool.query(`
+  INSERT INTO employee_documents (
+    employee_id, resume, pf_details, offer_letter, form16, payslips
+  ) VALUES (
+    $1, $2, $3, $4, $5, $6
+  )
+`, [
+      employeeId, resume || null, pf || null, offerLetter || null, form16 || null, payslips || null
+    ]);
+
 
     if (personalEmail) {
       await sendOnboardingEmail(personalEmail, {
@@ -101,10 +108,9 @@ router.post('/onboard', upload.fields([
   }
 });
 
-// === GET /employees - List All Employees ===
 router.get('/employees', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM employee_onboarding ORDER BY id DESC');
+    const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
     console.error('❌ Error fetching employees:', err);
@@ -112,12 +118,11 @@ router.get('/employees', async (req, res) => {
   }
 });
 
-// === GET /admin/pending-leaves ===
 router.get('/pending-leaves', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT lr.*, eo.fullname FROM leave_requests lr 
-      JOIN employee_onboarding eo ON lr.employee_id = eo.id 
+      SELECT lr.*, e.fullname FROM leave_requests lr 
+      JOIN employees e ON lr.employee_id = e.employee_id 
       WHERE status = 'Pending' 
       ORDER BY applied_on DESC
     `);
@@ -128,8 +133,6 @@ router.get('/pending-leaves', async (req, res) => {
   }
 });
 
-
-// === POST /admin/update-leave-status ===
 router.post('/update-leave-status', async (req, res) => {
   const { request_id, status } = req.body;
   try {
@@ -150,7 +153,7 @@ router.post('/update-leave-status', async (req, res) => {
       );
     }
 
-    const emailRes = await pool.query(`SELECT email FROM users WHERE id = $1`, [leave.employee_id]);
+    const emailRes = await pool.query(`SELECT email FROM employees WHERE employee_id = $1`, [leave.employee_id]);
     sendNotification(emailRes.rows[0].email, status);
 
     res.send('Leave status updated');
@@ -160,12 +163,11 @@ router.post('/update-leave-status', async (req, res) => {
   }
 });
 
-// === GET /admin/leave-balances ===
 router.get('/leave-balances', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT u.fullname, lb.* FROM leave_balances lb
-      JOIN users u ON lb.employee_id = u.id
+      SELECT e.fullname, lb.* FROM leave_balances lb
+      JOIN employees e ON lb.employee_id = e.employee_id
     `);
     res.json(result.rows);
   } catch (err) {
@@ -173,13 +175,13 @@ router.get('/leave-balances', async (req, res) => {
     res.status(500).send('❌ Failed to fetch leave balances');
   }
 });
-// ==== Send notifications =========
+
 function sendNotification(email, status, name = '') {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'your_email@gmail.com',       // replace with your mail
-      pass: 'your_app_password'           // replace with app password
+      user: 'your_email@gmail.com',
+      pass: 'your_app_password'
     }
   });
 
@@ -196,13 +198,12 @@ function sendNotification(email, status, name = '') {
   });
 }
 
-// Get all leave requests
 router.get('/leave-requests', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
         lr.id,
-        eo.fullname,
+        e.fullname,
         lr.leave_type,
         lr.from_date,
         lr.to_date,
@@ -210,7 +211,7 @@ router.get('/leave-requests', async (req, res) => {
         lr.status,
         lr.applied_on
       FROM leave_requests lr
-      JOIN employee_onboarding eo ON lr.employee_id = eo.user_id
+      JOIN employees e ON lr.employee_id = e.employee_id
       ORDER BY lr.applied_on DESC
     `);
     res.json(result.rows);
@@ -219,7 +220,6 @@ router.get('/leave-requests', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 router.post('/leave-requests/:id/action', async (req, res) => {
   const { id } = req.params;
@@ -242,20 +242,19 @@ router.post('/leave-requests/:id/action', async (req, res) => {
     }
 
     const empInfo = await pool.query(`
-      SELECT eo.email, eo.fullname
-      FROM employee_onboarding eo
-      JOIN leave_requests lr ON eo.user_id = lr.employee_id
+      SELECT e.personalEmail, e.fullname
+      FROM employees e
+      JOIN leave_requests lr ON e.employee_id = lr.employee_id
       WHERE lr.id = $1
     `, [id]);
 
     const { email, fullname } = empInfo.rows[0];
 
-    // Send Email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'your_email@gmail.com', // change this
-        pass: 'your_app_password',    // use App Password
+        user: 'your_email@gmail.com',
+        pass: 'your_app_password',
       },
     });
 
@@ -275,7 +274,6 @@ router.post('/leave-requests/:id/action', async (req, res) => {
   }
 });
 
-// === GET /admin/stats - Total Employees ===
 router.get('/stats', async (req, res) => {
   try {
     const empRes = await pool.query('SELECT COUNT(*) FROM users WHERE role = $1', ['employee']);
@@ -286,8 +284,6 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-
-// === PUT /admin/leaves/:id/status ===
 router.put('/leaves/:id/status', async (req, res) => {
   const leaveId = req.params.id;
   const { status } = req.body;
@@ -304,7 +300,6 @@ router.put('/leaves/:id/status', async (req, res) => {
 
     const leave = result.rows[0];
 
-    // Update leave balances if approved
     if (status === 'Approved') {
       const days =
         (new Date(leave.to_date) - new Date(leave.from_date)) / (1000 * 60 * 60 * 24) + 1;
@@ -316,21 +311,19 @@ router.put('/leaves/:id/status', async (req, res) => {
       );
     }
 
-    // Fetch employee email
     const emp = await pool.query(`
-      SELECT eo.email, eo.fullname FROM employee_onboarding eo
-      WHERE eo.user_id = $1
+      SELECT email, fullname FROM employees
+      WHERE employee_id = $1
     `, [leave.employee_id]);
 
     if (emp.rows.length > 0) {
       const { email, fullname } = emp.rows[0];
 
-      // Send notification email
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'your_email@gmail.com',  // replace
-          pass: 'your_app_password'      // replace
+          user: 'your_email@gmail.com',
+          pass: 'your_app_password'
         }
       });
 

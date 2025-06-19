@@ -1,11 +1,11 @@
+// auth.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 
-// === SIGNUP ===
+// === SIGNUP (Used only by employee self-registration) ===
 router.post('/signup', async (req, res) => {
-  console.log("Signup request received:", req.body);
   const { fullname, email, password } = req.body;
 
   if (!fullname || !email || !password) {
@@ -14,7 +14,6 @@ router.post('/signup', async (req, res) => {
 
   try {
     const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
     if (existingUser.rows.length > 0) {
       return res.status(409).json({ message: "Email already exists" });
     }
@@ -22,10 +21,9 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
-      `INSERT INTO users 
-       (fullname, email, password, role, is_first_login, default_password) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [fullname, email, hashedPassword, 'employee', true, false]
+      `INSERT INTO users (fullname, email, password, role, is_first_login, default_password)
+       VALUES ($1, $2, $3, 'employee', true, false)`,
+      [fullname, email, hashedPassword]
     );
 
     res.status(200).json({ message: 'Signup successful' });
@@ -42,7 +40,6 @@ router.post('/login', async (req, res) => {
 
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
     if (result.rows.length === 0) {
       return res.status(401).send('Invalid email or password');
     }
@@ -54,21 +51,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).send('Invalid email or password');
     }
 
-    // Set session
     req.session.userId = user.id;
     req.session.userRole = user.role;
 
-    // First login - force password reset
     if (user.is_first_login) {
       return res.status(200).json({ redirectTo: '/reset-password.html' });
     }
 
-    // Role-based redirect
     return res.status(200).json({
       message: 'Login successful',
       redirectTo: user.role === 'admin' ? '/admin-dashboard.html' : '/employee-dashboard.html'
     });
-
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).send('Server error');
@@ -97,7 +90,6 @@ router.post('/reset-password', async (req, res) => {
     );
 
     res.status(200).json({ message: 'Password reset successful', redirectTo: '/employee-dashboard.html' });
-
   } catch (err) {
     console.error("Password reset error:", err);
     res.status(500).send('Server error');
@@ -115,19 +107,19 @@ router.get('/logout', (req, res) => {
     res.clearCookie('connect.sid', {
       path: '/',
       httpOnly: true,
-      secure: false  // Set to true if using HTTPS
+      secure: false
     });
 
     return res.redirect('/login.html');
   });
 });
 
-// === SESSION CHECK (Optional: For frontend JS to detect session timeout) ===
+// === SESSION CHECK ===
 router.get('/api/check-session', (req, res) => {
   if (req.session && req.session.userId) {
     res.sendStatus(200);
   } else {
-    res.sendStatus(401); // Unauthorized
+    res.sendStatus(401);
   }
 });
 
