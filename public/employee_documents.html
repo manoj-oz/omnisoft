@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Documents</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 40px;
+      background-color: #f5f7fa;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #012a4a;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .filters select, .filters input {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 30%;
+      min-width: 150px;
+    }
+
+    .notification {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-left: 5px solid #28a745;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      cursor: default;
+    }
+
+    th {
+      background-color: #012a4a;
+      color: white;
+      cursor: pointer;
+    }
+
+    a.download-link {
+      color: #014f86;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a.download-link:hover {
+      text-decoration: underline;
+    }
+
+    .back-btn {
+  margin-top: 20px; /* Adds space above the button */
+}
+    
+       .back-btn a {
+        
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+       }|
+  </style>
+</head>
+<body>
+
+  <h2>📂 My Documents</h2>
+
+  <div class="notification" id="notifyBar">📢 New documents have been uploaded!</div>
+
+  <div class="filters">
+    <select id="filterType">
+      <option value="">All Types</option>
+      <option value="Payslip">Payslip</option>
+      <option value="Form 16">Form 16</option>
+      <option value="Others">Others</option>
+    </select>
+
+    <input type="month" id="filterMonthYear" />
+
+    <div class="back-btn">
+      <a href="employee-dashboard.html">← Back to Dashboard</a>
+    </div>
+
+  </div>
+
+  <input type="text" id="searchInput" placeholder="🔍 Search document name..." style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ccc;">
+
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortTable('type')">Type ⬍</th>
+        <th onclick="sortTable('month')">Month</th>
+        <th onclick="sortTable('year')">Year</th>
+        <th onclick="sortTable('uploaded')">Uploaded</th>
+        <th>Download</th>
+      </tr>
+    </thead>
+    <tbody id="docTable">
+      <!-- Dynamic rows -->
+    </tbody>
+  </table>
+
+  <script>
+    let allDocs = [];
+    let lastLength = 0;
+    let sortKey = 'uploaded';
+    let sortAsc = false;
+
+    async function fetchDocs() {
+      const res = await fetch('/employee/my-documents');
+      const data = await res.json();
+      allDocs = data;
+      if (data.length > lastLength) {
+        document.getElementById("notifyBar").style.display = "block";
+        lastLength = data.length;
+      }
+      renderDocs();
+    }
+
+    function renderDocs() {
+      const type = document.getElementById("filterType").value;
+      const monthYear = document.getElementById("filterMonthYear").value;
+      const search = document.getElementById("searchInput").value.toLowerCase();
+
+      let docs = [...allDocs];
+
+      if (type) docs = docs.filter(d => d.document_type === type);
+      if (monthYear) {
+        const [year, month] = monthYear.split("-");
+        docs = docs.filter(d => d.upload_month == parseInt(month) && d.upload_year == parseInt(year));
+      }
+      if (search) docs = docs.filter(d => d.document_name?.toLowerCase().includes(search));
+
+      docs.sort((a, b) => {
+        if (sortKey === 'month') return sortAsc ? a.upload_month - b.upload_month : b.upload_month - a.upload_month;
+        if (sortKey === 'year') return sortAsc ? a.upload_year - b.upload_year : b.upload_year - a.upload_year;
+        if (sortKey === 'uploaded') return sortAsc ? new Date(a.uploaded_at) - new Date(b.uploaded_at) : new Date(b.uploaded_at) - new Date(a.uploaded_at);
+        if (sortKey === 'type') return sortAsc ? a.document_type.localeCompare(b.document_type) : b.document_type.localeCompare(a.document_type);
+      });
+
+      const table = document.getElementById("docTable");
+      table.innerHTML = docs.map(doc => `
+        <tr>
+          <td>${doc.document_type}</td>
+          <td>${new Date(0, doc.upload_month - 1).toLocaleString('default', { month: 'long' })}</td>
+          <td>${doc.upload_year}</td>
+          <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
+        
+    
+          <td><a class="download-link" href="/employee/download-document/${doc.id}/${doc.document_type.toLowerCase()}">Download</a></td>
+
+
+        </tr>
+      `).join('');
+
+      if (docs.length === 0) {
+        table.innerHTML = '<tr><td colspan="5">No documents found</td></tr>';
+      }
+    }
+
+    function sortTable(key) {
+      sortKey = key;
+      sortAsc = !sortAsc;
+      renderDocs();
+    }
+
+    document.getElementById("filterType").addEventListener("change", renderDocs);
+    document.getElementById("filterMonthYear").addEventListener("change", renderDocs);
+    document.getElementById("searchInput").addEventListener("input", renderDocs);
+
+    fetchDocs();
+    setInterval(fetchDocs, 15000); // Refresh every 15s
+  </script>
+</body>
+</html>

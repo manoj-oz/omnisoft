@@ -108,9 +108,11 @@ router.post('/onboard', upload.fields([
   }
 });
 
+
+
 router.get('/employees', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
+    const result = await pool.query('SELECT employee_id, fullname, designation, department, email FROM employees ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
     console.error('❌ Error fetching employees:', err);
@@ -343,5 +345,73 @@ router.put('/leaves/:id/status', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error updating leave status' });
   }
 });
+
+// Create folders if not exist
+const docUploadDir = path.join(__dirname, '../uploads/admin_docs');
+if (!fs.existsSync(docUploadDir)) fs.mkdirSync(docUploadDir, { recursive: true });
+
+const documentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, docUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const filename = `${req.body.employee_id}_${Date.now()}${ext}`;
+    cb(null, filename);
+  }
+});
+const documentUpload = multer({ storage: documentStorage });
+
+// === Upload Admin Document ===
+router.post('/upload-document', documentUpload.single('document'), async (req, res) => {
+  try {
+    const { employee_id, document_type, upload_month, upload_year } = req.body;
+    const document_name = req.file.originalname;
+    const document_path = req.file.path;
+
+    await pool.query(`
+      INSERT INTO admin_uploaded_documents (
+        employee_id, document_type, document_name, document_path, upload_month, upload_year
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+    `, [employee_id, document_type, document_name, document_path, upload_month, upload_year]);
+
+    res.json({ success: true, message: 'Document uploaded successfully' });
+  } catch (err) {
+    console.error('❌ Document upload error:', err);
+    res.status(500).json({ error: 'Failed to upload document' });
+  }
+});
+
+// === List All Uploaded Documents (for admin panel) ===
+router.get('/all-documents', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, employee_id, document_type, document_name, upload_month, upload_year, uploaded_at
+      FROM admin_uploaded_documents
+      ORDER BY uploaded_at DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Error fetching documents:', err);
+    res.status(500).json({ error: 'Failed to fetch documents' });
+  }
+});
+
+// === Download Document ===
+router.get('/download-document/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doc = await pool.query(`SELECT document_path, document_name FROM admin_uploaded_documents WHERE id = $1`, [id]);
+
+    if (doc.rows.length === 0) return res.status(404).send('Document not found');
+
+    const { document_path, document_name } = doc.rows[0];
+    res.download(document_path, document_name);
+  } catch (err) {
+    console.error('❌ Download error:', err);
+    res.status(500).send('Failed to download document');
+  }
+});
+
 
 module.exports = router;

@@ -50,7 +50,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 700px;
     }
 
     th, td {
@@ -112,6 +112,7 @@
     <table id="employeeTable">
       <thead>
         <tr>
+          <th>Employee ID</th>
           <th>Name</th>
           <th>Designation</th>
           <th>Department</th>
@@ -139,7 +140,7 @@
         displayEmployees(data);
       } catch (err) {
         console.error("Failed to load employees:", err);
-        tableBody.innerHTML = `<tr><td colspan="4">Failed to fetch data</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5">Failed to fetch data</td></tr>`;
       }
     }
 
@@ -148,6 +149,7 @@
       data.forEach(emp => {
         const row = `
           <tr>
+            <td>${emp.employee_id}</td>
             <td>${emp.fullname}</td>
             <td>${emp.designation || ''}</td>
             <td>${emp.department || ''}</td>

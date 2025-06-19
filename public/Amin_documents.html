@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Employee Documents</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h2 {
+      color: #012a4a;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    form label {
+      margin-top: 10px;
+      display: block;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="number"], select, input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #012a4a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #014f86;
+    }
+
+    #uploadedList {
+      margin-top: 30px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    li a {
+      text-decoration: none;
+      color: #012a4a;
+    }
+    
+       .back-btn a {
+      text-decoration: none;
+      color: #012a4a;
+      font-weight: bold;
+       }|
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📂 Upload Employee Documents</h2>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <label for="employee_id">Employee ID</label>
+      <input type="text" id="employee_id" name="employee_id" required />
+
+      <label for="document_type">Document Type</label>
+      <select id="document_type" name="document_type" required>
+        <option value="">-- Select Document Type --</option>
+        <option value="payslip">Payslip</option>
+        <option value="form16">Form 16</option>
+        <option value="other">Other</option>
+      </select>
+
+      <label for="upload_month">Month</label>
+      <input type="number" id="upload_month" name="upload_month" min="1" max="12" required />
+
+      <label for="upload_year">Year</label>
+      <input type="number" id="upload_year" name="upload_year" min="2000" required />
+
+      <label for="document">Select Document (PDF)</label>
+      <input type="file" id="document" name="document" accept=".pdf" required />
+
+      <button type="submit">Upload Document</button>
+    </form>
+
+    <div id="uploadedList">
+      <h3>📁 Uploaded Documents</h3>
+      <ul id="docList"></ul>
+    </div>
+    <div class="back-btn">
+      <a href="admin-dashboard.html">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const docList = document.getElementById("docList");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const res = await fetch("/admin/upload-document", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        alert("Document uploaded successfully!");
+        form.reset();
+        fetchDocuments();
+      } else {
+        alert(result.error || "Upload failed.");
+      }
+    });
+
+    async function fetchDocuments() {
+      const res = await fetch("/admin/all-documents");
+      const data = await res.json();
+
+      docList.innerHTML = data.map(doc => `
+        <li>
+          ${doc.document_type} - ${doc.employee_id} (${doc.upload_month}/${doc.upload_year})<br>
+          <a href="/admin/download-document/${doc.id}" target="_blank">${doc.document_name}</a>
+        </li>
+      `).join("");
+    }
+
+    fetchDocuments(); // Load uploaded docs on page load
+  </script>
+</body>
+</html>

@@ -1,6 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const path = require('path');
+const fs = require('fs');
 const pool = require('../db');
+
 const router = express.Router();
 
 // ========= Dashboard Data =========
@@ -14,9 +17,7 @@ router.get('/dashboard-data', async (req, res) => {
       [userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Employee not found' });
-    }
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Employee not found' });
 
     const { fullname, dob } = result.rows[0];
     const today = new Date();
@@ -119,9 +120,7 @@ router.post('/leave-request', async (req, res) => {
 
   try {
     const employee = await pool.query('SELECT employee_id FROM employees WHERE user_id = $1', [userId]);
-    if (employee.rows.length === 0) {
-      return res.status(400).send('Employee record not found.');
-    }
+    if (employee.rows.length === 0) return res.status(400).send('Employee record not found.');
 
     const employeeId = employee.rows[0].employee_id;
 
@@ -150,6 +149,69 @@ router.get('/leave-history/:employeeId', async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Leave history error:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// ========= Get Documents =========
+router.get('/my-documents', async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).send('Unauthorized');
+
+    const empRes = await pool.query(`SELECT employee_id FROM employees WHERE user_id = $1`, [userId]);
+    const employee_id = empRes.rows[0]?.employee_id;
+
+    const result = await pool.query(`
+      SELECT id, document_type, document_name, upload_month, upload_year, uploaded_at
+      FROM admin_uploaded_documents
+      WHERE employee_id = $1
+      ORDER BY uploaded_at DESC
+    `, [employee_id]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Error fetching employee documents:', err);
+    res.status(500).json({ error: 'Failed to fetch documents' });
+  }
+});
+
+// ========= Download Document =========
+router.get('/download-document/:id/:type', async (req, res) => {
+  const { id, type } = req.params;
+
+  const typeMap = {
+    payslip: 'payslips',
+    form16: 'form16',
+    resume: 'resume',
+    pf: 'pf_details',
+    offerletter: 'offer_letter'
+  };
+
+  const columnName = typeMap[type.toLowerCase()];
+  if (!columnName) {
+    return res.status(400).send('Invalid document type');
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM employee_documents WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).send('Document not found');
+    }
+
+    const fileName = result.rows[0][columnName];
+    if (!fileName) {
+      return res.status(404).send(`No document found for type: ${type}`);
+    }
+
+    const filePath = path.join(__dirname, '..', 'uploads', fileName);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('File not found on server');
+    }
+
+    res.download(filePath);
+  } catch (err) {
+    console.error('Download error:', err);
     res.status(500).send('Server error');
   }
 });
