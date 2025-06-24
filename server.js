@@ -6,8 +6,6 @@ dotenv.config();
 
 const app = express();
 
-
-
 // === Middleware Imports ===
 const checkAdminAuth = require('./middleware/checkAdminAuth');
 const checkEmployeeAuth = require('./middleware/checkEmployeeAuth');
@@ -37,8 +35,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// === Protected HTML Routes ===
-// Admin
+// === Static Files ===
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// === Super Admin Routes ===
+app.get('/superAdmin-dashboard.html', checkSuperAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'superAdmin-dashboard.html'));
+});
+app.get('/add-admin.html', checkSuperAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'add-admin.html'));
+});
+
+// === Admin Routes ===
 app.get('/admin-dashboard.html', checkAdminAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
 });
@@ -55,7 +64,7 @@ app.get('/leave-management.html', checkAdminAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'leave-management.html'));
 });
 
-// Employee
+// === Employee Routes ===
 app.get('/employee-dashboard.html', checkEmployeeAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'employee-dashboard.html'));
 });
@@ -78,37 +87,12 @@ app.get('/view-timesheet.html', checkEmployeeAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'view-timesheet.html'));
 });
 
-// === Public HTML Routes (optional login, no auth) ===
-app.get('/reset-password', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
-});
-app.get('/view-profile', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'view-profile.html'));
-});
-app.get('/onboarding', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'employee-onboarding.html'));
+// === Public Fallback Route (optional) ===
+app.get('/', (req, res) => {
+  res.send('Welcome to OmniSoft QA Portal Backend');
 });
 
-app.get('/superAdmin-dashboard.html', (req, res) => {
-  if (!req.session.superadmin) {
-    return res.redirect('/superAdminLogin.html');
-  }
-  res.sendFile(path.join(__dirname, 'public', 'superAdmin-dashboard.html'));
-});
-
-app.get('//superAdmin-dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', '/superAdmin-dashboard.html'));
-});
-
-app.get('/add-admin.html', checkSuperAdminAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'add-admin.html'));
-});
-
-// === Static Files ===
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// === Routes ===
+// === Routes Integration ===
 const superAdminRoutes = require('./routes/superAdminRoutes');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/adminRoutes');
