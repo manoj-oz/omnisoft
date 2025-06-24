@@ -8,43 +8,51 @@ dotenv.config();
 const router = express.Router();
 
 // === Super Admin Login ===
-router.post('/superadmin/login', (req, res) => {
+router.post('/superadmin/login', async (req, res) => {
   const { email, password } = req.body;
 
-  const inputEmail = email.trim().toLowerCase(); // normalize input
-  const inputPassword = password.trim();
+  try {
+    const result = await pool.query('SELECT * FROM super_admins WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-  const superEmail = process.env.SUPER_ADMIN_EMAIL.trim().toLowerCase();
-  const superPass = process.env.SUPER_ADMIN_PASSWORD.trim();
+    const admin = result.rows[0];
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-  console.log("Received Email:", inputEmail);
-  console.log("Env Email:", superEmail);
-
-  if (inputEmail === superEmail && inputPassword === superPass) {
     req.session.superadmin = true;
-    return res.status(200).json({ message: 'Super Admin logged in successfully' });
-  } else {
-    return res.status(401).json({ error: 'Invalid email or password' });
+    req.session.superadminId = admin.id;
+
+    res.status(200).json({
+      message: 'Super Admin logged in successfully',
+      redirectTo: '/superAdmin-dashboard.html' // ✅ matches your filename
+    });
+
+  } catch (err) {
+    console.error('Superadmin login error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-
 // === Serve Super Admin Pages with Protection ===
-router.get('/superadmin-dashboard.html', (req, res) => {
+router.get('/superAdmin-dashboard.html', (req, res) => {
   if (!req.session.superadmin) {
-    return res.redirect('/superadmin-login.html');
+    return res.redirect('/superAdminLogin.html'); // ✅ matches your filename
   }
-  res.sendFile(path.join(__dirname, '../public/superadmin-dashboard.html'));
+  res.sendFile(path.join(__dirname, '../public/superAdmin-dashboard.html')); // ✅ matches filename
 });
 
 router.get('/add-admin.html', (req, res) => {
   if (!req.session.superadmin) {
-    return res.redirect('/superadmin-login.html');
+    return res.redirect('/superAdminLogin.html'); // ✅ matches filename
   }
   res.sendFile(path.join(__dirname, '../public/add-admin.html'));
 });
 
-// === Add New Admin (only if logged in as Super Admin) ===
+// === Add New Admin ===
 router.post('/superadmin/add-admin', async (req, res) => {
   if (!req.session.superadmin) {
     return res.status(403).json({ error: 'Unauthorized' });
@@ -64,7 +72,6 @@ router.post('/superadmin/add-admin', async (req, res) => {
     const insertQuery = `
       INSERT INTO admins (name, email, password)
       VALUES ($1, $2, $3)
-      RETURNING *
     `;
     await pool.query(insertQuery, [name, email, hashedPassword]);
     res.status(201).json({ message: 'Admin created successfully' });
@@ -72,6 +79,19 @@ router.post('/superadmin/add-admin', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+// === Logout ===
+router.get('/superadmin/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).send("Logout failed");
+    }
+
+    res.clearCookie('connect.sid');
+    res.redirect('/superAdminLogin.html'); // ✅ matches filename
+  });
 });
 
 module.exports = router;

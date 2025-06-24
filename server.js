@@ -6,9 +6,12 @@ dotenv.config();
 
 const app = express();
 
+
+
 // === Middleware Imports ===
 const checkAdminAuth = require('./middleware/checkAdminAuth');
 const checkEmployeeAuth = require('./middleware/checkEmployeeAuth');
+const checkSuperAdminAuth = require('./middleware/checkSuperAdminAuth');
 
 // === Middleware Setup ===
 app.use(express.json());
@@ -84,6 +87,21 @@ app.get('/view-profile', (req, res) => {
 });
 app.get('/onboarding', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'employee-onboarding.html'));
+});
+
+app.get('/superAdmin-dashboard.html', (req, res) => {
+  if (!req.session.superadmin) {
+    return res.redirect('/superAdminLogin.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'superAdmin-dashboard.html'));
+});
+
+app.get('//superAdmin-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', '/superAdmin-dashboard.html'));
+});
+
+app.get('/add-admin.html', checkSuperAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'add-admin.html'));
 });
 
 // === Static Files ===
