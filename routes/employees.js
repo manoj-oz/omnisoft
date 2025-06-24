@@ -5,7 +5,7 @@ const pool = require('../db'); // PostgreSQL connection
 // Get all employees
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
+    const result = await pool.query('SELECT * FROM employees ORDER BY id ASC');
     res.json(result.rows);
   } catch (err) {
     console.error(err);
