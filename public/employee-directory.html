@@ -38,6 +38,15 @@
       border-radius: 6px;
     }
 
+    .add-btn {
+      padding: 6px 12px;
+      background-color: #012a4a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     .table-container {
       overflow-x: auto;
       background: white;
@@ -85,6 +94,50 @@
         width: 100%;
       }
     }
+
+    /* Modal Styles */
+    #addEmployeeModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #addEmployeeModal .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    #addEmployeeModal input {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #addEmployeeModal button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #addEmployeeModal .submit-btn {
+      background-color: #012a4a;
+      color: white;
+    }
+
+    #addEmployeeModal .cancel-btn {
+      background-color: #ccc;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -103,6 +156,7 @@
         <option value="Product">Product</option>
       </select>
     </div>
+    <button class="add-btn" onclick="openModal()">➕ Add Employee</button>
     <div class="back-btn">
       <a href="admin-dashboard.html">← Back to Dashboard</a>
     </div>
@@ -123,6 +177,21 @@
         <!-- Rows will be dynamically inserted here -->
       </tbody>
     </table>
+  </div>
+
+  <!-- Add Employee Modal -->
+  <div id="addEmployeeModal">
+    <div class="modal-content">
+      <h3>Add Employee</h3>
+      <form id="addEmployeeForm">
+        <input type="text" name="fullname" placeholder="Full Name" required />
+        <input type="text" name="designation" placeholder="Designation" required />
+        <input type="text" name="department" placeholder="Department" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <button type="submit" class="submit-btn">Add</button>
+        <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -173,6 +242,42 @@
 
       displayEmployees(filtered);
     }
+
+    function openModal() {
+      document.getElementById('addEmployeeModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('addEmployeeModal').style.display = 'none';
+    }
+
+    document.getElementById('addEmployeeForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch('/admin/add-employee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          alert('Employee added successfully');
+          closeModal();
+          loadEmployees(); // refresh table
+        } else {
+          alert(result.error || 'Error adding employee');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Request failed');
+      }
+    });
 
     searchInput.addEventListener("input", applyFilters);
     departmentFilter.addEventListener("change", applyFilters);

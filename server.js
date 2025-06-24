@@ -1,34 +1,32 @@
-// server.js
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const app = express();
 
-// Routes
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/adminRoutes');
-const employeeRoutes = require('./routes/employeeRoutes');
+// === Middleware Imports ===
+const checkAdminAuth = require('./middleware/checkAdminAuth');
+const checkEmployeeAuth = require('./middleware/checkEmployeeAuth');
 
-// Middlewares
+// === Middleware Setup ===
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Session
+// === Session Setup ===
 app.use(session({
-  secret: 'your-secret-key',
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     secure: false,
-    maxAge: 1000 * 60 * 60 * 2
+    maxAge: 1000 * 60 * 30 // 30 minutes
   }
 }));
 
-// Cache control
+// === Prevent Caching ===
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -36,12 +34,48 @@ app.use((req, res, next) => {
   next();
 });
 
-// Route Mounting
-app.use('/', authRoutes);
-app.use('/admin', adminRoutes);
-app.use('/employee', employeeRoutes);
+// === Protected HTML Routes ===
+// Admin
+app.get('/admin-dashboard.html', checkAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
+});
+app.get('/employee-onboarding.html', checkAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'employee-onboarding.html'));
+});
+app.get('/employee-directory.html', checkAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'employee-directory.html'));
+});
+app.get('/admin-documents.html', checkAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-documents.html'));
+});
+app.get('/leave-management.html', checkAdminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'leave-management.html'));
+});
 
-// HTML Routing
+// Employee
+app.get('/employee-dashboard.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'employee-dashboard.html'));
+});
+app.get('/employee-leave.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'employee-leave.html'));
+});
+app.get('/employee_documents.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'employee_documents.html'));
+});
+app.get('/reset-password.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+});
+app.get('/view-profile.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view-profile.html'));
+});
+app.get('/timesheet.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'timesheet.html'));
+});
+app.get('/view-timesheet.html', checkEmployeeAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view-timesheet.html'));
+});
+
+// === Public HTML Routes (optional login, no auth) ===
 app.get('/reset-password', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
@@ -52,8 +86,23 @@ app.get('/onboarding', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'employee-onboarding.html'));
 });
 
-// Server start
-const PORT = 5000;
+// === Static Files ===
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// === Routes ===
+const superAdminRoutes = require('./routes/superAdminRoutes');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/adminRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
+
+app.use('/', superAdminRoutes);
+app.use('/', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/employee', employeeRoutes);
+
+// === Start Server ===
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });

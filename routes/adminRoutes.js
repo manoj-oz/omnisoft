@@ -413,5 +413,83 @@ router.get('/download-document/:id', async (req, res) => {
   }
 });
 
+router.post('/add-employee', async (req, res) => {
+  const { fullname, designation, department, email } = req.body;
+
+  try {
+    // Check if employee already exists by email
+    const check = await pool.query('SELECT * FROM employees WHERE email = $1', [email]);
+    if (check.rows.length > 0) {
+      return res.status(409).json({ error: 'Employee already exists' });
+    }
+
+    // Fetch latest employee_id
+    const latest = await pool.query(`SELECT employee_id FROM employees ORDER BY employee_id DESC LIMIT 1`);
+    let nextId = 'EMP0001';
+
+    if (latest.rows.length > 0) {
+      const lastId = latest.rows[0].employee_id;
+      const lastNum = parseInt(lastId.replace('EMP', ''));
+      nextId = 'EMP' + String(lastNum + 1).padStart(4, '0');
+    }
+
+    // Insert with generated ID
+    await pool.query(`
+      INSERT INTO employees (employee_id, fullname, designation, department, email)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [nextId, fullname, designation, department, email]);
+
+    res.status(201).json({ message: 'Employee added', employee_id: nextId });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const result = await pool.query('SELECT * FROM admins WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const admin = result.rows[0];
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    req.session.admin = {
+      id: admin.id,
+      name: admin.name,
+      email: admin.email
+    };
+
+    res.json({ message: 'Login successful', redirectTo: '/admin-dashboard.html' });
+  } catch (err) {
+    console.error('Admin login error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Logout Error:', err);
+      return res.status(500).send('Logout failed');
+    }
+    res.clearCookie('connect.sid');
+    res.redirect('/admin-login.html');
+    res.json({ message: 'Logged out successfully' });
+  });
+});
+
+
+    
+
+
 
 module.exports = router;

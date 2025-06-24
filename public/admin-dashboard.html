@@ -27,8 +27,6 @@
     </div>
 
     <a href="Admin_documents.html">Payslips Upload</a>
-
-    
   </div>
 
   <div class="main">
@@ -66,25 +64,41 @@
     });
 
     // Logout function
-    function logout() {
-      fetch('/logout')
-        .then(() => {
-          // Prevent back button from returning to this page
-          window.location.replace('/login.html');
-        })
-        .catch(err => {
+    async function logout() {
+      try {
+        const res = await fetch('/admin/logout', { method: 'POST' });
+        if (res.ok) {
+          window.location.replace('/admin-login.html');
+        } else {
           alert('Logout failed');
-          console.error(err);
-        });
+        }
+      } catch (err) {
+        alert('Logout error');
+        console.error(err);
+      }
     }
 
-    // Prevent going back to dashboard after logout
+    // Prevent back button after logout
     if (window.history && window.history.pushState) {
       window.history.pushState(null, null, window.location.href);
       window.onpopstate = function () {
-        window.location.href = "/login.html";
+        window.location.replace("/admin-login.html");
       };
     }
+
+    
+  // Prevent accessing dashboard after logout
+  if (window.performance && window.performance.navigation.type === 2) {
+    location.href = "/admin-login.html";
+  }
+
+  // Disable back navigation using history
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
+  };
+
+
   </script>
 
 </body>

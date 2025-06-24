@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Super Admin Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="form-container">
+    <h2>Super Admin Login</h2>
+    <img src="images/logo.png" alt="My Logo" class="logo" />
+
+    <!-- No action/method here; handled by JavaScript -->
+    <form id="loginForm">
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Email"
+        required
+      />
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+      <button type="submit">Login</button>
+      <p style="color: rgb(128, 128, 128); font-size: 12px;"></p>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!email.endsWith('@omnisoftsystems.com')) {
+        alert('Only @omnisoftsystems.com emails are allowed.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/superadmin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.error || 'Login failed');
+          return;
+        }
+
+        const data = await res.json();
+        alert('Login successful!');
+        window.location.href = '/superAdmin-dashboard.html';
+
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong!');
+      }
+    });
+  </script>
+</body>
+</html>
