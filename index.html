@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee Weekly Timesheet</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="logo.jpg" alt="Company Logo" />
+    </div>
+
+    <h1>Employee Weekly Timesheet Template</h1>
+
+    <div class="top-row">
+      <div class="emp-id">
+        <label for="emp-id">Emp ID:</label>
+        <input type="text" id="emp-id" placeholder="Enter Employee ID" />
+      </div>
+      <div class="date-picker">
+        <label for="date">Pick Date:</label>
+        <input type="date" id="date" />
+      </div>
+    </div>
+
+    <div class="table-section">
+      <table>
+        <thead>
+          <tr>
+            <th>Tasks</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+          </tr>
+        </thead>
+        <tbody id="task-table">
+          <!-- JavaScript injects rows here -->
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><strong>Total Hours</strong></td>
+            <td><input type="text" class="total" readonly></td>
+            <td><input type="text" class="total" readonly></td>
+            <td><input type="text" class="total" readonly></td>
+            <td><input type="text" class="total" readonly></td>
+            <td><input type="text" class="total" readonly></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="buttons">
+      <button class="save" onclick="saveTimesheet()">📂 Save Timesheet</button>
+      <button class="calculate" onclick="calculateTotal()">🧲 Calculate Total</button>
+      <button class="clear" onclick="clearWeek()">🗑 Clear Week</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
