@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Timesheet Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .summary-table th, .summary-table td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .summary-table th {
+      background-color: #0275d8;
+      color: white;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="logo.jpg" alt="Company Logo">
+    </div>
+
+    <h1>Admin Monthly Timesheet Overview</h1>
+
+    <div class="top-row">
+      <div class="date-picker">
+        <label for="monthSelector">Select Month:</label>
+        <input type="month" id="monthSelector">
+      </div>
+    </div>
+
+    <div id="summaryContainer"></div>
+
+  </div>
+
+  <script>
+    const TASKS = ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6"];
+
+    function getMonday(d) {
+      d = new Date(d);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    }
+
+    function formatDate(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function getWeeksInMonth(monthStr) {
+      const [year, month] = monthStr.split("-").map(Number);
+      const firstDate = new Date(year, month - 1, 1);
+      const lastDate = new Date(year, month, 0);
+
+      const weeks = [];
+      let current = getMonday(firstDate);
+
+      while (current <= lastDate) {
+        let includeWeek = false;
+        for (let i = 0; i < 5; i++) {
+          const day = new Date(current);
+          day.setDate(current.getDate() + i);
+          if (day.getMonth() === (month - 1)) {
+            includeWeek = true;
+            break;
+          }
+        }
+
+        if (includeWeek) {
+          const start = formatDate(current);
+          const endDate = new Date(current);
+          endDate.setDate(current.getDate() + 4);
+          const end = formatDate(endDate);
+          weeks.push({ start, end });
+        }
+
+        current.setDate(current.getDate() + 7);
+      }
+
+      return weeks;
+    }
+
+    document.getElementById("monthSelector").addEventListener("change", handleMonthChange);
+
+    function handleMonthChange() {
+      const monthStr = document.getElementById("monthSelector").value;
+      if (!monthStr) return;
+
+      const weeks = getWeeksInMonth(monthStr);
+      const weekMap = {};
+
+      weeks.forEach((w, i) => {
+        weekMap[w.start] = {
+          label: `Week ${i + 1} (${w.start} to ${w.end})`,
+          start: w.start,
+          tasks: TASKS.reduce((acc, t) => { acc[t] = 0; return acc; }, {}),
+          total: 0
+        };
+      });
+
+      renderSummary(weekMap, weeks);
+    }
+
+    function renderSummary(weekMap, weeks) {
+      const container = document.getElementById("summaryContainer");
+      let html = `<table class="summary-table"><thead><tr><th>Task</th>`;
+      weeks.forEach(w => {
+        const label = `${weekMap[w.start].label}`;
+        html += `<th onclick=\"window.location.href='Timesheet.html?date=${w.start}'\">${label}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      TASKS.forEach(task => {
+        html += `<tr><td>${task}</td>`;
+        weeks.forEach(w => {
+          html += `<td>${weekMap[w.start].tasks[task]}</td>`;
+        });
+        html += `</tr>`;
+      });
+
+      html += `<tr><th>Total</th>`;
+      weeks.forEach(w => html += `<th>${weekMap[w.start].total}</th>`);
+      html += `</tr>`;
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

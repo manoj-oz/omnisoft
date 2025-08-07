@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Onboarding - Omni HR</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 40px 30px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 1px;
+    }
+    .logo img {
+      width: 400px;
+      height: 300px;
+      object-fit: contain;
+    }
+    h2 {
+      text-align: center;
+      color: #012a4a;
+      margin-bottom: 30px;
+    }
+    h3, h4 {
+      color: #012a4a;
+      margin: 30px 0 10px;
+    }
+    label {
+      font-weight: 600;
+      color: #333;
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      margin-top: 10px;
+    }
+    input[type="file"] {
+      padding: 8px;
+    }
+    button {
+      padding: 12px 20px;
+      background-color: #012a4a;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #014f86;
+    }
+    .form-section {
+      display: none;
+    }
+    .form-section.active {
+      display: block;
+    }
+    .experience-block {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 20px;
+      margin-top: 20px;
+      background-color: #f9f9f9;
+    }
+    .nav-buttons, .exp-buttons {
+      text-align: center;
+    }
+    .back-btn {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .back-btn a {
+      color: #012a4a;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="logo.jpg" alt="Company Logo">
+    </div>
+    <h2>New Employee Onboarding</h2>
+
+    <form id="onboardingForm">
+      <!-- Section 1: Personal Information -->
+      <div class="form-section active" id="section1">
+        <h3>Personal Information</h3>
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" required pattern="^[A-Za-z\s]+$" title="Only letters and spaces allowed" />
+
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" required pattern="^\d{10}$" title="Enter a valid 10-digit phone number" />
+
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+
+        <label for="dob">Date of Birth</label>
+        <input type="date" id="dob" name="dob" required />
+
+        <label for="personalEmail">Personal Email</label>
+        <input type="email" id="personalEmail" name="personalEmail" required />
+
+        <label for="address">Address</label>
+        <textarea id="address" name="address" required rows="3"></textarea>
+
+        <label for="emergency">Emergency Contact</label>
+        <input type="text" id="emergency" name="emergency" required />
+      </div>
+
+      <!-- Section 2: Experience -->
+      <div class="form-section" id="section2">
+        <h3>Previous Organization Documents</h3>
+        <label for="expYears">Select Experience (Years)</label>
+        <select id="expYears" required>
+          <option value="">Select</option>
+        </select>
+
+        <div class="checkbox-label" id="sameOrgWrapper" style="display:none;">
+          <input type="checkbox" id="sameOrgCheckbox" />
+          <label for="sameOrgCheckbox">Tick the checkbox if entire experience is only in a single organization</label>
+        </div>
+
+        <div id="experienceContainer"></div>
+      </div>
+
+      <!-- Section 3: Identity Documents -->
+      <div class="form-section" id="section3">
+        <h3>Identity Documents</h3>
+
+        <label for="aadhar">Aadhar Card</label>
+        <input type="file" id="aadhar" name="aadhar">
+
+        <label for="pancard">PAN Card</label>
+        <input type="file" id="pancard" name="pancard">
+
+        <label for="marksheet">Marks List</label>
+        <input type="file" id="marksheet" name="marksheet">
+
+        <label for="Passport size photo">Passport size photo</label>
+        <input type="file" id="Passport size photo" name="Passport size photo">
+      </div>
+
+      <!-- Section 4: Final -->
+      <div class="form-section" id="section4">
+        <h3>Review & Submit</h3>
+        <p>Please review your entries and click submit.</p>
+        <button type="submit">Final Submit</button>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="nav-buttons">
+        <button type="button" id="prevBtn" onclick="nextPrev(-1)" style="display: none;">Back</button>
+        <button type="button" id="nextBtn" onclick="nextPrev(1)">Next</button>
+      </div>
+    </form>
+
+    <div class="back-btn"><br>
+      <a href="admin-dashboard.html">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const dob = document.getElementById("dob");
+    dob.max = new Date().toISOString().split("T")[0];
+
+    let currentSection = 0;
+    const sections = document.querySelectorAll(".form-section");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    function showSection(index) {
+      sections.forEach((sec, i) => sec.classList.toggle("active", i === index));
+      prevBtn.style.display = index === 0 ? "none" : "inline-block";
+      nextBtn.style.display = index === sections.length - 1 ? "none" : "inline-block";
+    }
+
+    function nextPrev(n) {
+      if (n === 1 && !validateSection(sections[currentSection])) return;
+      currentSection += n;
+      showSection(currentSection);
+    }
+
+    function validateSection(section) {
+      const inputs = section.querySelectorAll("input, select, textarea");
+      for (const input of inputs) {
+        if (!input.checkValidity()) {
+          input.reportValidity();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    showSection(currentSection);
+
+    // Experience Dropdown Logic
+    const expYearsSelect = document.getElementById("expYears");
+    const experienceContainer = document.getElementById("experienceContainer");
+    const sameOrgCheckbox = document.getElementById("sameOrgCheckbox");
+    const sameOrgWrapper = document.getElementById("sameOrgWrapper");
+
+    for (let i = 1; i <= 10; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      expYearsSelect.appendChild(option);
+    }
+
+    expYearsSelect.addEventListener("change", () => {
+      sameOrgWrapper.style.display = expYearsSelect.value ? "flex" : "none";
+      generateExperienceBlocks();
+    });
+
+    sameOrgCheckbox.addEventListener("change", generateExperienceBlocks);
+
+    function generateExperienceBlocks() {
+      const years = parseInt(expYearsSelect.value);
+      const singleOrg = sameOrgCheckbox.checked;
+      experienceContainer.innerHTML = "";
+
+      const blockCount = singleOrg ? 1 : years;
+
+      for (let i = 0; i < blockCount; i++) {
+        const block = document.createElement("div");
+        block.className = "experience-block";
+        block.innerHTML = `
+          <h4>Experience ${i + 1}</h4>
+          <label>Organization Name</label>
+          <input type="text" name="orgName_${i + 1}" required />
+
+          <label>Employment Duration (From)</label>
+          <input type="date" name="from_${i + 1}" required />
+          <label>Employment Duration (To)</label>
+          <input type="date" name="to_${i + 1}" required />
+
+          <label>Pay Slip</label>
+          <input type="file" name="payslip_${i + 1}" required />
+
+          <label>Hike Letter</label>
+          <input type="file" name="hike_${i + 1}" required />
+
+          <label>Form 16</label>
+          <input type="file" name="form16_${i + 1}" required />
+
+          <label>Offer Letter</label>
+          <input type="file" name="offerLetter_${i + 1}" required />
+
+          <label>Experience Letter</label>
+          <input type="file" name="experienceLetter_${i + 1}" required />
+
+          <div class="exp-buttons">
+            <button type="button" onclick="submitExperience(${i + 1})">Submit</button>
+            ${!singleOrg && i < years - 1 ? `<button type="button" onclick="scrollToBlock(${i + 2})">Next</button>` : ''}
+          </div>
+        `;
+        experienceContainer.appendChild(block);
+      }
+    }
+
+    function scrollToBlock(num) {
+      const block = document.querySelectorAll(".experience-block")[num - 1];
+      if (block) block.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function submitExperience(num) {
+      alert(`Experience ${num} submitted.`);
+    }
+
+    document.getElementById("onboardingForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert("Form submitted successfully!");
+      this.reset();
+      showSection(0);
+      experienceContainer.innerHTML = "";
+      sameOrgWrapper.style.display = "none";
+    });
+  </script>
+</body>
+</html>

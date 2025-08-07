@@ -1,3 +1,16 @@
+const urlParams = new URLSearchParams(window.location.search);
+const dateFromURL = urlParams.get('date');
+
+if (dateFromURL) {
+    window.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.getElementById("date");
+        dateInput.value = dateFromURL;
+        updateEditableDays(dateFromURL);
+        loadTable();
+    });
+}
+
+
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const TASKS = ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5", "Task 6"];
 let editableDays = [];

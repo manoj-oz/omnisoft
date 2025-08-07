@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leave Management</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div class="container">
+    <div class="logo">
+      <img src="logo.jpg" alt="Company Logo">
+    </div>
+    <div class="header">
+        <h1>Leave Management</h1>
+        <button id="newRequestBtn">+ New Leave Request</button>
+    </div>
+
+    <div class="tabs">
+        <button id="myRequestsTab" class="tab active">My Requests</button>
+        <button id="analyticsTab" class="tab">Analytics</button>
+    </div>
+    <div id="tab-content"></div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h2>New Leave Request</h2>
+            <form id="leaveForm">
+                <label>Name</label>
+                <input type="text" id="employee" required autocomplete="off">
+                <label>Leave Type</label>
+                <select id="leaveType" required>
+                    <option value="Annual Leave">Annual Leave</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Personal Leave">Personal Leave</option>
+                    <option value="Emergency Leave">Emergency Leave</option>
+                </select>
+                <label>Start Date</label>
+                <input type="date" id="startDate" required>
+                <label>End Date</label>
+                <input type="date" id="endDate" required>
+                <label>Reason</label>
+                <textarea id="reason" required></textarea>
+                <button type="submit">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
