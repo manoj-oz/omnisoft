@@ -1,23 +1,24 @@
-// === db.js ===
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
-// Load .env only if not in production
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+let pool;
 
-// Helpful log for debugging
-if (!process.env.DATABASE_URL) {
-  console.error("❌ DATABASE_URL is not defined in environment variables.");
+if (process.env.NODE_ENV === "azure") {
+  pool = new Pool({
+    host: process.env.PGHOST,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+    port: process.env.PGPORT,
+    ssl: { rejectUnauthorized: false }  // ✅ required for Azure PostgreSQL
+  });
 } else {
-  console.log("✅ DATABASE_URL found:", process.env.DATABASE_URL);
+  pool = new Pool({
+    host: process.env.LOCAL_DB_HOST,
+    user: process.env.LOCAL_DB_USER,
+    password: process.env.LOCAL_DB_PASSWORD,
+    database: process.env.LOCAL_DB_NAME,
+    port: process.env.LOCAL_DB_PORT,
+  });
 }
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
 
 module.exports = pool;

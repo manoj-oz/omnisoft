@@ -41,6 +41,18 @@
   <div class="content">
     <p>Welcome, Super Admin!</p>
     <a class="btn" href="/add-admin.html">Add New Admin</a>
+
   </div>
+   <a href="#" onclick="logout()">Logout</a>
 </body>
+<script>
+  function logout() {
+      fetch('/logout')
+        .then(() => window.location.href = '/login.html')
+        .catch(err => {
+          alert('Logout failed');
+          console.error(err);
+        });
+    }
+</script>
 </html>
